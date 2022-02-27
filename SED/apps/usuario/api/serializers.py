@@ -5,4 +5,6 @@ class UsuarioSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Usuario
-        fields = "__all__"
+        fields = ['id','codigo', 'nombre']
+
+
