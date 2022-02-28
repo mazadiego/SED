@@ -1,0 +1,6 @@
+-Usuario
+--Borrado restringido [Pendiente]
+--no permitir eliminacion de usuario admin [Pendiente]
+
+-Institucion Educativa
+--usuario debe ser Unique Key [Pendiente]

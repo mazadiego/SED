@@ -7,7 +7,7 @@ pip install -r requirements.txt
 
 ### Crear BD
 ```
-py manage.py migrate
+py .\SED\manage.py migrate
 ```
 
 ### Activar entorno virtual
