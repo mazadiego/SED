@@ -1,2 +1,3 @@
 venv/
 *.pyc
+SED/db.sqlite3
