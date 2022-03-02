@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('usuario/',include('apps.usuario.api.urls')),
     path('institucioneducativa/',include('apps.institucioneducativa.api.urls')),
+    path('institucioneducativausuario/',include('apps.institucioneducativa.api.urls2')),
 ]
