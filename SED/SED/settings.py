@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'apps.usuario.apps.UsuarioConfig',
     'apps.institucioneducativa.apps.InstitucioneducativaConfig',
+    'apps.tiporecaudo.apps.TiporecaudoConfig',
 ]
 
 MIDDLEWARE = [

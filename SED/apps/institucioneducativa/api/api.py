@@ -50,22 +50,25 @@ def institucioneducativa_details_api_view(request, codigo = None):
 
         elif request.method == 'PUT':
             data = request.data
-            if 'usuarioid' in data.keys():        
-                usuarioid = data.pop('usuarioid')
-                if 'codigo' in usuarioid.keys():
-                    usuario = Usuario.objects.filter(codigo = usuarioid['codigo']).first()
-                    if usuario:
-                        usuarioid_serializer = UsuarioSerializer(usuario)
-                        usuarioid = dict(usuarioid_serializer.data)
-                        data.update({"usuarioid": usuarioid['id'] })             
-                        institucioneducativa_serializers = InstitucioneducativaSerializer(institucioneducativa, data = request.data)            
-                        if institucioneducativa_serializers.is_valid():
-                            institucioneducativa_serializers.save()
-                            return Response(institucioneducativa_serializers.data,status = status.HTTP_200_OK)
-                        return Response(institucioneducativa_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
-                    return Response('Usuario Ingresado No Existe',status = status.HTTP_400_BAD_REQUEST)
-                return Response('Falta el nodo codigo para el usuario registrado',status = status.HTTP_400_BAD_REQUEST) 
-            return Response('Falta el nodo usuarioid',status = status.HTTP_400_BAD_REQUEST) 
+            if 'codigo' in data.keys():
+                data['codigo'] = codigo 
+                if 'usuarioid' in data.keys():        
+                    usuarioid = data.pop('usuarioid')
+                    if 'codigo' in usuarioid.keys():
+                        usuario = Usuario.objects.filter(codigo = usuarioid['codigo']).first()
+                        if usuario:
+                            usuarioid_serializer = UsuarioSerializer(usuario)
+                            usuarioid = dict(usuarioid_serializer.data)
+                            data.update({"usuarioid": usuarioid['id'] })             
+                            institucioneducativa_serializers = InstitucioneducativaSerializer(institucioneducativa, data = request.data)            
+                            if institucioneducativa_serializers.is_valid():
+                                institucioneducativa_serializers.save()
+                                return Response(institucioneducativa_serializers.data,status = status.HTTP_200_OK)
+                            return Response(institucioneducativa_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
+                        return Response('Usuario Ingresado No Existe',status = status.HTTP_400_BAD_REQUEST)
+                    return Response('Falta el nodo codigo para el usuario registrado',status = status.HTTP_400_BAD_REQUEST) 
+                return Response('Falta el nodo usuarioid',status = status.HTTP_400_BAD_REQUEST) 
+            return Response('Falta el nodo codigo',status = status.HTTP_400_BAD_REQUEST) 
         elif request.method == 'DELETE':
             try:
                 institucioneducativa.delete()

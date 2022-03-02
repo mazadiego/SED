@@ -35,13 +35,15 @@ def usuario_details_api_view(request, codigo = None):
                 usuario_serializers = UsuarioSerializer(usuario)
                 return Response(usuario_serializers.data,status = status.HTTP_200_OK)
 
-            elif request.method == 'PUT':            
-                usuario_serializers = UsuarioSerializer(usuario, data = request.data)            
-                if usuario_serializers.is_valid():
-                    usuario_serializers.save()
-                    return Response(usuario_serializers.data,status = status.HTTP_200_OK)
-                return Response(usuario_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
-
+            elif request.method == 'PUT': 
+                if 'codigo' in request.data.keys():
+                    request.data['codigo'] = codigo          
+                    usuario_serializers = UsuarioSerializer(usuario, data = request.data)            
+                    if usuario_serializers.is_valid():
+                        usuario_serializers.save()
+                        return Response(usuario_serializers.data,status = status.HTTP_200_OK)
+                    return Response(usuario_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
+                return Response('falta el nodo codigo',status = status.HTTP_400_BAD_REQUEST) 
             elif request.method == 'DELETE':
                 try:
                     usuario.delete()

@@ -9,4 +9,4 @@
 
 --tipocontrato
 
---tiporecaudo
+--tiporecaudo[agregado]
