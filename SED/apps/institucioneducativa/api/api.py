@@ -79,3 +79,20 @@ def institucioneducativa_details_api_view(request, codigo = None):
             
     return Response('Institucion educativa no Existe',status = status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def institucioneducativa_usuario_details_api_view(request, codigo = None):
+    usuario = Usuario.objects.filter(codigo=codigo).first()
+
+    if usuario:
+        usuarioid_serializer = UsuarioSerializer(usuario)
+        usuarioid = dict(usuarioid_serializer.data)
+        institucioneducativa = Institucioneducativa.objects.filter(usuarioid=usuarioid['id']).first()
+        
+        if institucioneducativa:
+            if request.method == 'GET':            
+                institucioneducativa_serializers = InstitucioneducativaSerializer(institucioneducativa)
+            return Response(institucioneducativa_serializers.data,status = status.HTTP_200_OK)
+        return Response('No Existe',status = status.HTTP_400_BAD_REQUEST)
+
+    return Response('Usuario Ingresado No Existe',status = status.HTTP_400_BAD_REQUEST)
+
