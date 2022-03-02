@@ -1,6 +1,12 @@
 -Usuario
---Borrado restringido [Pendiente]
---no permitir eliminacion de usuario admin [Pendiente]
+--Borrado restringido [ resuelto]
+--no permitir eliminacion de usuario admin [resuleto]
 
 -Institucion Educativa
---usuario debe ser Unique Key [Pendiente]
+--usuario debe ser Unique Key [resuelto]
+
+--personalplanta
+
+--tipocontrato
+
+--tiporecaudo

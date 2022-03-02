@@ -9,6 +9,7 @@ class InstitucioneducativaSerializer(serializers.ModelSerializer):
         model = Institucioneducativa
         fields = ['id','codigo', 'nombre','usuarioid']
 
+   
     def to_representation(self, instance):
        institucioneducativa = super().to_representation(instance)
        institucioneducativa['usuarioid'] = UsuarioSerializer(instance.usuarioid).data
