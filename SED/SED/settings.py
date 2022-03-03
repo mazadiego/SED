@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.usuario.apps.UsuarioConfig',
     'apps.institucioneducativa.apps.InstitucioneducativaConfig',
     'apps.tiporecaudo.apps.TiporecaudoConfig',
+    'apps.tipocontrato.apps.TipocontratoConfig',
 ]
 
 MIDDLEWARE = [
