@@ -5,14 +5,14 @@
 pip install -r requirements.txt
 ```
 
-### Crear BD
-```
-py .\SED\manage.py migrate
-```
-
 ### Activar entorno virtual
 ```
 .\venv\Scripts\activate
+```
+
+### Crear BD
+```
+py .\SED\manage.py migrate
 ```
 
 ### Correr API
