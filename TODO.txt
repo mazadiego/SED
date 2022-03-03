@@ -4,9 +4,12 @@
 
 -Institucion Educativa
 --usuario debe ser Unique Key [resuelto]
+-- se quita el archivo urls2.py
 
---personalplanta
+--personalplanta [agregado]
 
---tipocontrato
+--tipocontrato [agregado]
 
 --tiporecaudo[agregado]
+
+--se corrije actualizacion de los codigo de maestros
