@@ -13,3 +13,7 @@
 --tiporecaudo[agregado]
 
 --se corrije actualizacion de los codigo de maestros
+
+--tipoidentificacion [agregado]
+
+--tercero[agregado]

@@ -23,4 +23,6 @@ urlpatterns = [
     path('tiporecaudo/',include('apps.tiporecaudo.api.urls')),
     path('tipocontrato/',include('apps.tipocontrato.api.urls')),
     path('personalplanta/',include('apps.personalplanta.api.urls')),
+    path('tipoidentificacion/',include('apps.tipoidentificacion.api.urls')),
+    path('tercero/',include('apps.tercero.api.urls')),
 ]
