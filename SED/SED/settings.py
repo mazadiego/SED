@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'apps.personalplanta.apps.PersonalplantaConfig',
     'apps.tipoidentificacion.apps.TipoidentificacionConfig',
     'apps.tercero.apps.TerceroConfig',
+    'apps.rubropresupuestal.apps.RubropresupuestalConfig', 
+    'apps.fuenterecurso.apps.FuenterecursoConfig',   
 ]
 
 MIDDLEWARE = [

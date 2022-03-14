@@ -17,3 +17,7 @@
 --tipoidentificacion [agregado]
 
 --tercero[agregado]
+
+--rubropresupuestal[agregado]
+
+--fuenterecuerso[agregado]
