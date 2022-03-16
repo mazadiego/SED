@@ -27,7 +27,6 @@ def rubropresupuestal_api_view(request):
                     idpadre_serializers = Rubropresupuestalserializers(rubropadre)
                     idpadre = dict(idpadre_serializers.data)
                     request.data.update({'idpadre':idpadre['id']})
-
                     rubropresupuestal_serializer = Rubropresupuestalserializers(data = request.data)
                     if rubropresupuestal_serializer.is_valid():
                         rubropresupuestal_serializer.save()
@@ -60,18 +59,20 @@ def rubropresupuestal_details_api_view(request, codigo = None):
                 if 'idpadre' in request.data.keys():
                     idpadre = request.data.pop('idpadre')
                     if 'codigo' in idpadre.keys():
-                        rubropadre = Rubropresupuestal.objects.filter(codigo = idpadre['codigo']).first()
-                        if rubropadre:
-                            idpadre_serializers = Rubropresupuestalserializers(rubropadre)
-                            idpadre = dict(idpadre_serializers.data)
-                            request.data.update({'idpadre':idpadre['id']})
+                        if codigo != idpadre['codigo']:
+                            rubropadre = Rubropresupuestal.objects.filter(codigo = idpadre['codigo']).first()
+                            if rubropadre:
+                                idpadre_serializers = Rubropresupuestalserializers(rubropadre)
+                                idpadre = dict(idpadre_serializers.data)
+                                request.data.update({'idpadre':idpadre['id']})
 
-                            rubropresupuestal_serializer = Rubropresupuestalserializers(rubropresupuestal,data = request.data)
-                            if rubropresupuestal_serializer.is_valid():
-                                rubropresupuestal_serializer.save()
-                                return Response(rubropresupuestal_serializer.data,status = status.HTTP_201_CREATED)
-                            return Response(rubropresupuestal_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
-                        return Response('rubro presupuestal padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
+                                rubropresupuestal_serializer = Rubropresupuestalserializers(rubropresupuestal,data = request.data)
+                                if rubropresupuestal_serializer.is_valid():
+                                    rubropresupuestal_serializer.save()
+                                    return Response(rubropresupuestal_serializer.data,status = status.HTTP_201_CREATED)
+                                return Response(rubropresupuestal_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                            return Response('rubro presupuestal padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
+                        return Response('rubro presupuestal padre ingresado no puede ser igual al codigo del rubro',status = status.HTTP_400_BAD_REQUEST)
                     return Response('falta nodo codigo del rubro presupuestal padre',status = status.HTTP_400_BAD_REQUEST)
                 else:                    
                     rubropresupuestal_serializer = Rubropresupuestalserializers(rubropresupuestal,data = request.data)
@@ -81,11 +82,14 @@ def rubropresupuestal_details_api_view(request, codigo = None):
                     return Response(rubropresupuestal_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
             return Response('falta el nodo codigo',status = status.HTTP_400_BAD_REQUEST) 
         elif request.method == 'DELETE':
-            try:
-                rubropresupuestal.delete()
-                return Response('Rubro presupuestal eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('Rubro presupuestal no puede ser eliminado esta asociado a un documento',status = status.HTTP_400_BAD_REQUEST)            
+            rubropresupuestal_serializers = Rubropresupuestalserializers(rubropresupuestal)
+            if Rubropresupuestal.objects.filter(idpadre = rubropresupuestal_serializers.data['id']).count() == 0:
+                try:
+                    rubropresupuestal.delete()
+                    return Response('Rubro presupuestal eliminado Correctamente',status = status.HTTP_200_OK)
+                except RestrictedError:
+                    return Response('Rubro presupuestal no puede ser eliminado esta asociado a un documento',status = status.HTTP_400_BAD_REQUEST)
+            return Response('Rubro presupuestal no puede ser eliminado esta asociado como padre a otro rubro',status = status.HTTP_400_BAD_REQUEST)            
     return Response('Rubro presupuestal No Existe',status = status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])

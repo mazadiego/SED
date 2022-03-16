@@ -60,18 +60,20 @@ def fuenterecurso_details_api_view(request, codigo = None):
                 if 'idpadre' in request.data.keys():
                     idpadre = request.data.pop('idpadre')
                     if 'codigo' in idpadre.keys():
-                        fuentepadre = Fuenterecurso.objects.filter(codigo = idpadre['codigo']).first()
-                        if fuentepadre:
-                            idpadre_serializers = Fuenterecursoserializers(fuentepadre)
-                            idpadre = dict(idpadre_serializers.data)
-                            request.data.update({'idpadre':idpadre['id']})
+                        if codigo != idpadre['codigo']:
+                            fuentepadre = Fuenterecurso.objects.filter(codigo = idpadre['codigo']).first()
+                            if fuentepadre:
+                                idpadre_serializers = Fuenterecursoserializers(fuentepadre)
+                                idpadre = dict(idpadre_serializers.data)
+                                request.data.update({'idpadre':idpadre['id']})
 
-                            fuenterecurso_serializer = Fuenterecursoserializers(fuenterecurso,data = request.data)
-                            if fuenterecurso_serializer.is_valid():
-                                fuenterecurso_serializer.save()
-                                return Response(fuenterecurso_serializer.data,status = status.HTTP_201_CREATED)
-                            return Response(fuenterecurso_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
-                        return Response('fuente recurso padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
+                                fuenterecurso_serializer = Fuenterecursoserializers(fuenterecurso,data = request.data)
+                                if fuenterecurso_serializer.is_valid():
+                                    fuenterecurso_serializer.save()
+                                    return Response(fuenterecurso_serializer.data,status = status.HTTP_201_CREATED)
+                                return Response(fuenterecurso_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                            return Response('fuente recurso padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
+                        return Response('fuente de recuerso padre ingresado no puede ser igual al codigo de la fuente de recurso a modificar',status = status.HTTP_400_BAD_REQUEST)
                     return Response('falta nodo codigo de la fuente recurso padre',status = status.HTTP_400_BAD_REQUEST)
                 else:                    
                     fuenterecurso_serializer = Fuenterecursoserializers(fuenterecurso,data = request.data)
@@ -81,11 +83,14 @@ def fuenterecurso_details_api_view(request, codigo = None):
                     return Response(fuenterecurso_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
             return Response('falta el nodo codigo',status = status.HTTP_400_BAD_REQUEST) 
         elif request.method == 'DELETE':
-            try:
-                fuenterecurso.delete()
-                return Response('fuente recurso eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('fuente recurso no puede ser eliminado esta asociado a un documento',status = status.HTTP_400_BAD_REQUEST)            
+            fuenterecurso_serializers = Fuenterecursoserializers(fuenterecurso)
+            if Fuenterecurso.objects.filter(idpadre = fuenterecurso_serializers.data['id']).count() == 0:
+                try:
+                    fuenterecurso.delete()
+                    return Response('fuente recurso eliminado Correctamente',status = status.HTTP_200_OK)
+                except RestrictedError:
+                    return Response('fuente recurso no puede ser eliminado esta asociado a un documento',status = status.HTTP_400_BAD_REQUEST)            
+            return Response('fuente recurso no puede ser eliminado esta asociado como padre a otra fuente de recurso',status = status.HTTP_400_BAD_REQUEST)
     return Response('fuente recurso no existe',status = status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
