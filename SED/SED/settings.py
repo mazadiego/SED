@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'apps.tercero.apps.TerceroConfig',
     'apps.rubropresupuestal.apps.RubropresupuestalConfig', 
     'apps.fuenterecurso.apps.FuenterecursoConfig',  
-    'apps.periodo.apps.PeriodoConfig',   
+    'apps.periodo.apps.PeriodoConfig', 
+    'apps.proyeccionpresupuestalcabecera.apps.ProyeccionpresupuestalcabeceraConfig', 
 ]
 
 MIDDLEWARE = [
