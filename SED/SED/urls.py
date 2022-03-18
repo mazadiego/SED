@@ -27,4 +27,5 @@ urlpatterns = [
     path('tercero/',include('apps.tercero.api.urls')),
     path('rubropresupuestal/',include('apps.rubropresupuestal.api.urls')),
     path('fuenterecurso/',include('apps.fuenterecurso.api.urls')),
+    path('periodo/',include('apps.periodo.api.urls')),
 ]

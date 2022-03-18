@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'apps.tipoidentificacion.apps.TipoidentificacionConfig',
     'apps.tercero.apps.TerceroConfig',
     'apps.rubropresupuestal.apps.RubropresupuestalConfig', 
-    'apps.fuenterecurso.apps.FuenterecursoConfig',   
+    'apps.fuenterecurso.apps.FuenterecursoConfig',  
+    'apps.periodo.apps.PeriodoConfig',   
 ]
 
 MIDDLEWARE = [
