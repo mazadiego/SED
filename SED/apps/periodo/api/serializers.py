@@ -8,4 +8,4 @@ class Periodoserializers(serializers.ModelSerializer):
 
     class Meta:
         model = Periodo
-        fields = ['id','periodo','activo']
+        fields = ['id','codigo','activo']
