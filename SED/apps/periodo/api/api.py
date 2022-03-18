@@ -25,23 +25,23 @@ def periodo_api_view(request):
         return Response(periodo_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','PUT','DELETE'])
-def periodo_details_api_view(request, periodo = None):
+def periodo_details_api_view(request, codigo = None):
     
-    objperiodo = Periodo.objects.filter(periodo=periodo).first()
+    objperiodo = Periodo.objects.filter(codigo=codigo).first()
     if objperiodo:
         if request.method == 'GET':            
             periodo_serializers = Periodoserializers(objperiodo)
             return Response(periodo_serializers.data,status = status.HTTP_200_OK)
 
         elif request.method == 'PUT':             
-            if 'periodo' in request.data.keys(): 
-                request.data['periodo'] = periodo
+            if 'codigo' in request.data.keys(): 
+                request.data['codigo'] = codigo
                 periodo_serializers = Periodoserializers(objperiodo, data = request.data)            
                 if periodo_serializers.is_valid():
                     periodo_serializers.save()
                     return Response(periodo_serializers.data,status = status.HTTP_200_OK)
                 return Response(periodo_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
-            return Response('falta el nodo periodo',status = status.HTTP_400_BAD_REQUEST) 
+            return Response('falta el nodo codigo',status = status.HTTP_400_BAD_REQUEST) 
         elif request.method == 'DELETE':
             try:
                 objperiodo.delete()

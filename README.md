@@ -10,7 +10,17 @@ pip install -r requirements.txt
 .\venv\Scripts\activate
 ```
 
-### Crear BD
+### Crear Super Usuario
+```
+py .\SED\manage.py createsuperuser
+```
+
+### Crear Migrate
+```
+py .\SED\manage.py makemigrations
+```
+
+### Ejecutar Migrate
 ```
 py .\SED\manage.py migrate
 ```
