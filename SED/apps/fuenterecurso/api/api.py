@@ -102,6 +102,14 @@ def fuenterecurso_final_api_view(request):
         list_fuentes = [fuente for fuente in fuenterecurso_serializer.data if Fuenterecurso.objects.filter(idpadre = fuente['id']).count() == 0]  
         return Response(list_fuentes,status = status.HTTP_200_OK)
 
+def buscarfuenterecurso_final(data):
+
+    fuenterecurso = Fuenterecurso.objects.filter(codigo = data['codigo']).first()
+    if fuenterecurso:
+        if Fuenterecurso.objects.filter(idpadre = fuenterecurso.id).count()==0:
+            return fuenterecurso
+
+
         
     
 

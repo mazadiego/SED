@@ -101,6 +101,12 @@ def rubropresupuestal_final_api_view(request):
         list_rubros = [rubro for rubro in rubropresupuestal_serializer.data if Rubropresupuestal.objects.filter(idpadre = rubro['id']).count() == 0]  
         return Response(list_rubros,status = status.HTTP_200_OK)
 
+def buscarrubropresupuestal_final(data):
+    rubropresupuestal = Rubropresupuestal.objects.filter(codigo = data['codigo']).first()
+    if rubropresupuestal:
+        if Rubropresupuestal.objects.filter(idpadre = rubropresupuestal.id).count()==0:
+            return rubropresupuestal
+
         
     
 

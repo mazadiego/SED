@@ -25,3 +25,34 @@
 -fuenterecuerso[agregado]
 --El sistema no debe permitir eliminar un codigo padre, si existen hijos de este [Pendiente]
 --El sistema debe Controlar que el codigo del padre y el codigo del hijo, siempre deben ser diferentes [Pendiente]
+
+proyeccionpresupuestalcabecera[agregado] Json ejemplo
+{       
+    "institucioneducativaid": {
+        "codigo": "0002"
+    },
+    "periodoid": {
+        "codigo": 2021
+    },
+    "observacion":"prueba",
+    "proyeccionpresupuestaldetalle": []
+}
+
+proyeccionpresupuestaldetalle[agregado] Json ejemplo
+
+{
+	"proyeccionpresupuestalid":
+		{
+			"codigoperiodo": "2021", 
+			"codigoinstitucioneducativa": "0002"
+		},
+	"fuenterecursoid":
+		{
+			"codigo":"0102"
+		},
+	"rubropresupuestalid":
+		{
+			"codigo":"0101"
+		},
+	"valor":"15000"
+}

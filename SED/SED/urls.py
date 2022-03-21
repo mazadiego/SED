@@ -28,4 +28,6 @@ urlpatterns = [
     path('rubropresupuestal/',include('apps.rubropresupuestal.api.urls')),
     path('fuenterecurso/',include('apps.fuenterecurso.api.urls')),
     path('periodo/',include('apps.periodo.api.urls')),
+    path('proyeccionpresupuestalcabecera/',include('apps.proyeccionpresupuestalcabecera.api.urls')),
+    path('proyeccionpresupuestaldetalle/',include('apps.proyeccionpresupuestaldetalle.api.urls')),
 ]
