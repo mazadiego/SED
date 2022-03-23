@@ -57,11 +57,13 @@ def proyeccionpresupuestalcabecera_api_view(request):
         return Response('falta el nodo institucioneducativaid',status = status.HTTP_400_BAD_REQUEST)
     elif request.method =='DELETE': 
         proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
-        try:
-            proyeccionpresupuestalcabecera.delete()
-            return Response('Eliminado Correctamente',status = status.HTTP_200_OK)
-        except RestrictedError:
-            return Response('proyeccion presupuestal no puede ser eliminar',status = status.HTTP_400_BAD_REQUEST)
+        if proyeccionpresupuestalcabecera:
+            try:
+                proyeccionpresupuestalcabecera.delete()
+                return Response('Eliminado Correctamente',status = status.HTTP_200_OK)
+            except RestrictedError:
+                return Response('proyeccion presupuestal no puede ser eliminar',status = status.HTTP_400_BAD_REQUEST)
+        return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
 
 def buscarproyeccionpresupuestalcabecera(request):
         parametros = dict(request.query_params)
