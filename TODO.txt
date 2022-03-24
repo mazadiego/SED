@@ -19,12 +19,10 @@
 --tercero[agregado]
 
 -rubropresupuestal[agregado]
---El sistema no debe permitir eliminar un codigo padre, si existen hijos de este [Pendiente]
---El sistema debe Controlar que el codigo del padre y el codigo del hijo, siempre deben ser diferentes [Pendiente]
+--Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [PENDIENTE]
 
 -fuenterecuerso[agregado]
---El sistema no debe permitir eliminar un codigo padre, si existen hijos de este [Pendiente]
---El sistema debe Controlar que el codigo del padre y el codigo del hijo, siempre deben ser diferentes [Pendiente]
+--Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [PENDIENTE]
 
 proyeccionpresupuestalcabecera[agregado] 
 --Falta operación PUT [PENDIENTE]
