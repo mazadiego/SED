@@ -27,7 +27,7 @@
 --El sistema debe Controlar que el codigo del padre y el codigo del hijo, siempre deben ser diferentes [Pendiente]
 
 proyeccionpresupuestalcabecera[agregado] 
---Falta operación PUT
+--Falta operación PUT [PENDIENTE]
 
 Json ejemplo
 {       
@@ -42,6 +42,7 @@ Json ejemplo
 }
 
 proyeccionpresupuestaldetalle[agregado] Json ejemplo
+--Falta operación DELETE [PENDIENTE]
 
 {
 	"proyeccionpresupuestalid":
