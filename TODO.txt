@@ -16,4 +16,5 @@ http://127.0.0.1:8000/proyeccionpresupuestaldetalle/?codigoperiodo=2021&codigoin
 
 IngresoPresupuestal
 --solo se pueden asocias fuente de recursos asociadas a la proyeccion presupuestal del periodo 
---En la proyeccion presupuestal no se puede eliminar un detalle si la fuente de recurso ya existe en una proyeccion presupuestal
+--En la proyeccion presupuestal no se puede eliminar un detalle si la fuente de recurso ya existe en un ingreso presupuestal
+--Valor debe ser positivo mayor que cero
