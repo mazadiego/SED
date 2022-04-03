@@ -1,15 +1,19 @@
 -rubropresupuestal[agregado]
---Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [resuelto]
+--Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [resuelto][Prebas OK frontend]
 
 -fuenterecuerso[agregado]
---Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [resuelto]
+--Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [resuelto][Prebas OK frontend]
 
 proyeccionpresupuestalcabecera[agregado] 
---Falta operación PUT [resuelto]
+--Falta operación PUT [resuelto][Prebas OK frontend]
 
 proyeccionpresupuestaldetalle[agregado] Json ejemplo
---Falta operación DELETE [resuelto]
---validar Valor sea positivo mayor que cero [resuelto]
+--Falta operación DELETE [resuelto][Prebas OK frontend]
+--validar Valor sea positivo mayor que cero [resuelto][Prebas OK frontend]
 
-url para conusltar detalle y elieminar 
+url para conusltar detalle y eliminar 
 http://127.0.0.1:8000/proyeccionpresupuestaldetalle/?codigoperiodo=2021&codigoinstitucioneducativa=02&codigofuenterecurso=0102&codigorubropresupuestal=0101
+
+IngresoPresupuestal
+--solo se pueden asocias fuente de recursos asociadas a la proyeccion presupuestal del periodo 
+--En la proyeccion presupuestal no se puede eliminar un detalle si la fuente de recurso ya existe en una proyeccion presupuestal
