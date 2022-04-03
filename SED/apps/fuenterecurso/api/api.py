@@ -8,6 +8,7 @@ from rest_framework import status
 from apps.fuenterecurso.models import Fuenterecurso
 from apps.fuenterecurso.api.serializers import Fuenterecursoserializers
 from django.db.models.deletion import RestrictedError
+from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
 
 
 @api_view(['GET','POST'])
@@ -26,13 +27,15 @@ def fuenterecurso_api_view(request):
                 if fuentepadre:
                     idpadre_serializers = Fuenterecursoserializers(fuentepadre)
                     idpadre = dict(idpadre_serializers.data)
-                    request.data.update({'idpadre':idpadre['id']})
+                    if Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = idpadre['id']).count()==0:
+                        request.data.update({'idpadre':idpadre['id']})
 
-                    fuenterecurso_serializer = Fuenterecursoserializers(data = request.data)
-                    if fuenterecurso_serializer.is_valid():
-                        fuenterecurso_serializer.save()
-                        return Response(fuenterecurso_serializer.data,status = status.HTTP_201_CREATED)
-                    return Response(fuenterecurso_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                        fuenterecurso_serializer = Fuenterecursoserializers(data = request.data)
+                        if fuenterecurso_serializer.is_valid():
+                            fuenterecurso_serializer.save()
+                            return Response(fuenterecurso_serializer.data,status = status.HTTP_201_CREATED)
+                        return Response(fuenterecurso_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                    return Response('fuente recurso padre ingresado no puede ser asociado ya tiene movimiento como fuente detalle',status = status.HTTP_400_BAD_REQUEST)
                 return Response('fuente recurso padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
             return Response('falta nodo codigo de la fuente recurso padre',status = status.HTTP_400_BAD_REQUEST)
         else: 
@@ -65,13 +68,14 @@ def fuenterecurso_details_api_view(request, codigo = None):
                             if fuentepadre:
                                 idpadre_serializers = Fuenterecursoserializers(fuentepadre)
                                 idpadre = dict(idpadre_serializers.data)
-                                request.data.update({'idpadre':idpadre['id']})
-
-                                fuenterecurso_serializer = Fuenterecursoserializers(fuenterecurso,data = request.data)
-                                if fuenterecurso_serializer.is_valid():
-                                    fuenterecurso_serializer.save()
-                                    return Response(fuenterecurso_serializer.data,status = status.HTTP_201_CREATED)
-                                return Response(fuenterecurso_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                                if Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = idpadre['id']).count()==0:
+                                    request.data.update({'idpadre':idpadre['id']})
+                                    fuenterecurso_serializer = Fuenterecursoserializers(fuenterecurso,data = request.data)
+                                    if fuenterecurso_serializer.is_valid():
+                                        fuenterecurso_serializer.save()
+                                        return Response(fuenterecurso_serializer.data,status = status.HTTP_201_CREATED)
+                                    return Response(fuenterecurso_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                                return Response('fuente recurso padre ingresado no puede ser asociado ya tiene movimiento como fuente detalle',status = status.HTTP_400_BAD_REQUEST)
                             return Response('fuente recurso padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
                         return Response('fuente de recuerso padre ingresado no puede ser igual al codigo de la fuente de recurso a modificar',status = status.HTTP_400_BAD_REQUEST)
                     return Response('falta nodo codigo de la fuente recurso padre',status = status.HTTP_400_BAD_REQUEST)

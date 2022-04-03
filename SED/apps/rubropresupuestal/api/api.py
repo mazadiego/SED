@@ -8,6 +8,7 @@ from rest_framework import status
 from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.rubropresupuestal.api.serializers import Rubropresupuestalserializers
 from django.db.models.deletion import RestrictedError
+from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
 
 
 @api_view(['GET','POST'])
@@ -26,12 +27,14 @@ def rubropresupuestal_api_view(request):
                 if rubropadre:
                     idpadre_serializers = Rubropresupuestalserializers(rubropadre)
                     idpadre = dict(idpadre_serializers.data)
-                    request.data.update({'idpadre':idpadre['id']})
-                    rubropresupuestal_serializer = Rubropresupuestalserializers(data = request.data)
-                    if rubropresupuestal_serializer.is_valid():
-                        rubropresupuestal_serializer.save()
-                        return Response(rubropresupuestal_serializer.data,status = status.HTTP_201_CREATED)
-                    return Response(rubropresupuestal_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                    if Proyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = idpadre['id']).count()==0:
+                        request.data.update({'idpadre':idpadre['id']})
+                        rubropresupuestal_serializer = Rubropresupuestalserializers(data = request.data)
+                        if rubropresupuestal_serializer.is_valid():
+                            rubropresupuestal_serializer.save()
+                            return Response(rubropresupuestal_serializer.data,status = status.HTTP_201_CREATED)
+                        return Response(rubropresupuestal_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                    return Response('rubro presupuestal padre ingresado no puede ser asociado ya tiene movimiento como rubro detalle',status = status.HTTP_400_BAD_REQUEST)
                 return Response('rubro presupuestal padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
             return Response('falta nodo codigo del rubro presupuestal padre',status = status.HTTP_400_BAD_REQUEST)
         else: 
@@ -64,13 +67,15 @@ def rubropresupuestal_details_api_view(request, codigo = None):
                             if rubropadre:
                                 idpadre_serializers = Rubropresupuestalserializers(rubropadre)
                                 idpadre = dict(idpadre_serializers.data)
-                                request.data.update({'idpadre':idpadre['id']})
+                                if Proyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = idpadre['id']).count()==0:
+                                    request.data.update({'idpadre':idpadre['id']})
 
-                                rubropresupuestal_serializer = Rubropresupuestalserializers(rubropresupuestal,data = request.data)
-                                if rubropresupuestal_serializer.is_valid():
-                                    rubropresupuestal_serializer.save()
-                                    return Response(rubropresupuestal_serializer.data,status = status.HTTP_201_CREATED)
-                                return Response(rubropresupuestal_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                                    rubropresupuestal_serializer = Rubropresupuestalserializers(rubropresupuestal,data = request.data)
+                                    if rubropresupuestal_serializer.is_valid():
+                                        rubropresupuestal_serializer.save()
+                                        return Response(rubropresupuestal_serializer.data,status = status.HTTP_201_CREATED)
+                                    return Response(rubropresupuestal_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+                                return Response('rubro presupuestal padre ingresado no puede ser asociado ya tiene movimiento como rubro detalle',status = status.HTTP_400_BAD_REQUEST)
                             return Response('rubro presupuestal padre ingresado no existe',status = status.HTTP_400_BAD_REQUEST)
                         return Response('rubro presupuestal padre ingresado no puede ser igual al codigo del rubro',status = status.HTTP_400_BAD_REQUEST)
                     return Response('falta nodo codigo del rubro presupuestal padre',status = status.HTTP_400_BAD_REQUEST)

@@ -1,12 +1,15 @@
 -rubropresupuestal[agregado]
---Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [PENDIENTE]
+--Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [resuelto]
 
 -fuenterecuerso[agregado]
---Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [PENDIENTE]
+--Si ya esta relacionado en un "proyeccionpresupuestaldetalle" no debe permitir agregarle hijos [resuelto]
 
 proyeccionpresupuestalcabecera[agregado] 
---Falta operación PUT [PENDIENTE]
+--Falta operación PUT [resuelto]
 
 proyeccionpresupuestaldetalle[agregado] Json ejemplo
---Falta operación DELETE [PENDIENTE]
---validar Valor sea positivo mayor que cero [PENDIENTE]
+--Falta operación DELETE [resuelto]
+--validar Valor sea positivo mayor que cero [resuelto]
+
+url para conusltar detalle y elieminar 
+http://127.0.0.1:8000/proyeccionpresupuestaldetalle/?codigoperiodo=2021&codigoinstitucioneducativa=02&codigofuenterecurso=0102&codigorubropresupuestal=0101

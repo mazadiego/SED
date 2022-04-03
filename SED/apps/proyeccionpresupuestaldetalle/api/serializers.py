@@ -11,6 +11,10 @@ class ProyeccionpresupuestaldetalleSerializers(serializers.ModelSerializer):
         model = Proyeccionpresupuestaldetalle
         fields = ['id','proyeccionpresupuestalid', 'fuenterecursoid','rubropresupuestalid','valor']
 
+    def validate_valor(self, value):
+        if value <=0 or value== None:
+            raise serializers.ValidationError("Debe ingresar un valor mayor que cero (0)")
+        return value
    
     def to_representation(self, instance):
        proyeccionpresupuestaldetalle = super().to_representation(instance)

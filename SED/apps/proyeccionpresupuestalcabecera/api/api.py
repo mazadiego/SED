@@ -12,7 +12,7 @@ from django.db.utils import IntegrityError
 from apps.periodo.models import Periodo
 from apps.periodo.api.serializers import Periodoserializers
 
-@api_view(['GET','POST','DELETE'])
+@api_view(['GET','POST','DELETE','PUT'])
 def proyeccionpresupuestalcabecera_api_view(request):    
     if request.method =='GET':
         
@@ -63,6 +63,26 @@ def proyeccionpresupuestalcabecera_api_view(request):
                 return Response('Eliminado Correctamente',status = status.HTTP_200_OK)
             except RestrictedError:
                 return Response('proyeccion presupuestal no puede ser eliminar',status = status.HTTP_400_BAD_REQUEST)
+        return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
+    elif request.method =='PUT': 
+        data = request.data 
+        proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
+        if proyeccionpresupuestalcabecera:
+            proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)  
+            proyeccionpresupuestalcabecera_dict = dict(proyeccionpresupuestalcabecera_serializers.data)           
+            if 'periodoid' in data.keys():                   
+                periodoid = proyeccionpresupuestalcabecera_dict['periodoid']
+                request.data['periodoid'] = periodoid['id'] 
+                if 'institucioneducativaid' in data.keys():
+                    institucioneducativaid = proyeccionpresupuestalcabecera_dict['institucioneducativaid']
+                    request.data['institucioneducativaid'] = institucioneducativaid['id']
+                    proyeccionpresupuestalcabecera_PUT = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera, data = request.data)
+                    if proyeccionpresupuestalcabecera_PUT.is_valid():
+                        proyeccionpresupuestalcabecera_PUT.save()
+                        return Response(proyeccionpresupuestalcabecera_PUT.data,status = status.HTTP_201_CREATED)    
+                    return Response(proyeccionpresupuestalcabecera_PUT.errors, status = status.HTTP_400_BAD_REQUEST)    
+                return Response('falta el nodo institucioneducativaid',status = status.HTTP_400_BAD_REQUEST)    
+            return Response('falta el nodo periodoid',status = status.HTTP_400_BAD_REQUEST)     
         return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
 
 def buscarproyeccionpresupuestalcabecera(request):
