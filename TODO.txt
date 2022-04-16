@@ -15,6 +15,24 @@ url para conusltar detalle y eliminar
 http://127.0.0.1:8000/proyeccionpresupuestaldetalle/?codigoperiodo=2021&codigoinstitucioneducativa=02&codigofuenterecurso=0102&codigorubropresupuestal=0101
 
 IngresoPresupuestal
---solo se pueden asocias fuente de recursos asociadas a la proyeccion presupuestal del periodo 
---En la proyeccion presupuestal no se puede eliminar un detalle si la fuente de recurso ya existe en un ingreso presupuestal
---Valor debe ser positivo mayor que cero
+--solo se pueden asocias fuente de recursos asociadas a la proyeccion presupuestal del periodo [resuelto]
+--En la proyeccion presupuestal no se puede eliminar un detalle si la fuente de recurso ya existe en un ingreso presupuestal[resuelto]
+--Valor debe ser positivo mayor que cero[resuelto]
+--ojo la fecha debe ir separada por guion yyyy-mm--dd
+JSON-prueba 
+    {  
+        "institucioneducativaid": {
+			"codigo": "02"
+		},
+		"consecutivo":0,
+		"fecha":"2021-04-03",
+		"terceroid" :{
+			"codigo": "1128047055"
+		},
+		"fuenterecursoid":{
+			 "codigo": "0102"
+		},
+		"observacion":"pruebas inicial",
+		"valor":10000,
+		"fechaproyeccionrecaudo":"2021-04-30"
+    }

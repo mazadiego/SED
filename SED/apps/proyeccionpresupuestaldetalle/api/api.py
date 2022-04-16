@@ -15,6 +15,8 @@ from django.db.utils import IntegrityError
 from apps.proyeccionpresupuestalcabecera.api.api import buscarproyeccionpresupuestalcabecera
 from apps.fuenterecurso.models import Fuenterecurso
 from apps.rubropresupuestal.models import Rubropresupuestal
+from apps.fuenterecurso.api.api import  buscarfuenterecursoingresopresupuestal
+
 
 @api_view(['GET','POST','DELETE'])
 def proyeccionpresupuestaldetalle_api_view(request):
@@ -47,7 +49,7 @@ def proyeccionpresupuestaldetalle_api_view(request):
                                     data.update({"rubropresupuestalid":rubropresupuestalid['id']})
                                     
                                     proyeccionpresupuestaldetalle_Serializers = ProyeccionpresupuestaldetalleSerializers(data = data)
-                                    print(data)
+                                    
                                     if proyeccionpresupuestaldetalle_Serializers.is_valid():
                                         try:
                                             proyeccionpresupuestaldetalle_Serializers.save()
@@ -66,15 +68,20 @@ def proyeccionpresupuestaldetalle_api_view(request):
         proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
         if proyeccionpresupuestalcabecera:     
             proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)  
-            
+            proyeccionpresupuestalcabecera_dict = dict(proyeccionpresupuestalcabecera_serializers.data)
+            institucioneducativa = proyeccionpresupuestalcabecera_dict['institucioneducativaid']
             proyeccionpresupuestaldetalle = buscarproyeccionpresupuestalcabeceradetalle(request,proyeccionpresupuestalcabecera_serializers.data['id'])
             if proyeccionpresupuestaldetalle:
                 proyeccionpresupuestaldetalle_serializers = ProyeccionpresupuestaldetalleSerializers(proyeccionpresupuestaldetalle)
                 if request.method =='GET':                
                     return Response(proyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
                 elif request.method =='DELETE':
-                    proyeccionpresupuestaldetalle.delete()
-                    return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                    proyeccionpresupuestaldetalle_dict = dict(proyeccionpresupuestaldetalle_serializers.data)
+                    fuenterecurso = proyeccionpresupuestaldetalle_dict['fuenterecursoid']                    
+                    if buscarfuenterecursoingresopresupuestal(fuenterecurso['id'],institucioneducativa['id'])==False:
+                        proyeccionpresupuestaldetalle.delete()
+                        return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                    return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)
         return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
 

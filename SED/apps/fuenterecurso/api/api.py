@@ -9,7 +9,11 @@ from apps.fuenterecurso.models import Fuenterecurso
 from apps.fuenterecurso.api.serializers import Fuenterecursoserializers
 from django.db.models.deletion import RestrictedError
 from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
-
+from apps.periodo.models import Periodo
+from apps.periodo.api.serializers import Periodoserializers
+from apps.proyeccionpresupuestalcabecera.models import Proyeccionpresupuestalcabecera
+from apps.proyeccionpresupuestalcabecera.api.serializers import ProyeccionpresupuestalcabeceraSerializers
+from apps.ingresopresupuestal.models import Ingresopresupuestal
 
 @api_view(['GET','POST'])
 def fuenterecurso_api_view(request):
@@ -113,8 +117,44 @@ def buscarfuenterecurso_final(data):
         if Fuenterecurso.objects.filter(idpadre = fuenterecurso.id).count()==0:
             return fuenterecurso
 
-
+def buscarfuenterecursoproyeccion(fuenterecursoid, institucioneducativaid):
+    codigoperiodo = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    if periodo:
+        periodo_serializers = Periodoserializers(periodo)
+        periodo = dict(periodo_serializers.data)
+        codigoperiodo = periodo['id']
         
+        
+        proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=codigoperiodo, institucioneducativaid = institucioneducativaid ).first() 
+        
+        if proyeccionpresupuestalcabecera:
+           
+            proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)
+            proyeccionpresupuestalcabecera = dict(proyeccionpresupuestalcabecera_serializers.data)
+            if Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecursoid, proyeccionpresupuestalid = proyeccionpresupuestalcabecera['id']).count()==0:
+                return False
+            else:
+                return True 
+        else:
+            return False   
+    else:
+        return False   
+
+def buscarfuenterecursoingresopresupuestal(fuenterecursoid, institucioneducativaid):
+    codigoperiodo = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    if periodo:
+        periodo_serializers = Periodoserializers(periodo)
+        periodo = dict(periodo_serializers.data)
+        codigoperiodo = periodo['codigo']        
+         
+    ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecursoid, institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo).first()
+    
+    if ingresopresupuestal:
+        return True         
+    else:
+        return False    
     
 
       
