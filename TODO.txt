@@ -17,6 +17,7 @@ http://127.0.0.1:8000/proyeccionpresupuestaldetalle/?codigoperiodo=2021&codigoin
 IngresoPresupuestal
 --se necesita un metodo en el backend que me traiga las fuentes de la proyeccion de presupuesto, filtrado por institucion educativa y periodo activo [PENDIENTE]
 --se necesita un metodo en el backend que me traiga el saldo pendiente por ingreso de una fuente, filtrado por intitucion educativa y periodo activo [PENDIENTE]
+--Controlar total de proyecciones, no supere el total proyectado por fuente [PENDIENTE]
 --solo se pueden asocias fuente de recursos asociadas a la proyeccion presupuestal del periodo [resuelto]
 --En la proyeccion presupuestal no se puede eliminar un detalle si la fuente de recurso ya existe en un ingreso presupuestal[resuelto]
 --Valor debe ser positivo mayor que cero[resuelto]
@@ -27,7 +28,7 @@ JSON-prueba
 			"codigo": "02"
 		},
 		"consecutivo":0,
-		"fecha":"2021-04-03",
+		"fecha":"2022-04-03",
 		"terceroid" :{
 			"codigo": "1128047055"
 		},
@@ -36,5 +37,5 @@ JSON-prueba
 		},
 		"observacion":"pruebas inicial",
 		"valor":10000,
-		"fechaproyeccionrecaudo":"2021-04-30"
+		"fechaproyeccionrecaudo":"2022-04-30"
     }
