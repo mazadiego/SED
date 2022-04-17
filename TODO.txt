@@ -18,6 +18,7 @@ IngresoPresupuestal
 --se necesita un metodo en el backend que me traiga las fuentes de la proyeccion de presupuesto, filtrado por institucion educativa y periodo activo [PENDIENTE]
 --se necesita un metodo en el backend que me traiga el saldo pendiente por ingreso de una fuente, filtrado por intitucion educativa y periodo activo [PENDIENTE]
 --Controlar total de proyecciones, no supere el total proyectado por fuente [PENDIENTE]
+--el JSON debe recibir tipo identificacion y codigo del tercero por ser una llave compuesta [PENDIENTE]
 --solo se pueden asocias fuente de recursos asociadas a la proyeccion presupuestal del periodo [resuelto]
 --En la proyeccion presupuestal no se puede eliminar un detalle si la fuente de recurso ya existe en un ingreso presupuestal[resuelto]
 --Valor debe ser positivo mayor que cero[resuelto]
