@@ -11,13 +11,15 @@ from django.db.models.deletion import RestrictedError
 from django.db.utils import IntegrityError
 from apps.tercero.models import Tercero
 from apps.tercero.api.serializers import TerceroSerializer
-from apps.fuenterecurso.api.api import buscarfuenterecurso_final
+from apps.fuenterecurso.api.api import buscarfuenterecurso_final,saldofuenterecursoporingreso
 from apps.fuenterecurso.api.serializers import Fuenterecursoserializers
 from apps.periodo.models import Periodo
 from apps.periodo.api.serializers import Periodoserializers
 from apps.fuenterecurso.api.api import buscarfuenterecursoproyeccion
 from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
+from apps.tipoidentificacion.models import Tipoidentificacion
+from apps.tipoidentificacion.api.serializers import TipoidentificacionSerializer
 
 @api_view(['GET','POST'])
 def ingresopresupuestal_api_view(request):    
@@ -40,38 +42,45 @@ def ingresopresupuestal_api_view(request):
                     data.update({"institucioneducativaid": institucioneducativaid['id']})
                     if 'terceroid' in data.keys():
                         terceroid = data.pop('terceroid')
-                        if 'codigo' in terceroid.keys():
-                            tercero = Tercero.objects.filter(codigo = terceroid['codigo']).first()
-                            if tercero:
-                                terceroid_serializers = TerceroSerializer(tercero)
-                                terceroid = dict(terceroid_serializers.data)
-                                data.update({"terceroid" : terceroid['id']})
+                        if 'codigo' in terceroid.keys() and 'tipoidentificacion' in terceroid.keys():                            
+                            tipoidentificacion = Tipoidentificacion.objects.filter(codigo = terceroid['tipoidentificacion']).first()
+                            if tipoidentificacion:                                
+                                tipoidentificacion_serializers = TipoidentificacionSerializer(tipoidentificacion)
+                                tipoidentificacion = dict(tipoidentificacion_serializers.data)
+                                tercero = Tercero.objects.filter(codigo = terceroid['codigo'] ,tipoidentificacionid = tipoidentificacion['id']).first()
+                                if tercero:
+                                    terceroid_serializers = TerceroSerializer(tercero)
+                                    terceroid = dict(terceroid_serializers.data)
+                                    data.update({"terceroid" : terceroid['id']})
 
-                                if 'fuenterecursoid' in data.keys():
-                                    fuenterecursoid = data.pop('fuenterecursoid')
-                                    fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
+                                    if 'fuenterecursoid' in data.keys():
+                                        fuenterecursoid = data.pop('fuenterecursoid')
+                                        fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
 
-                                    if fuenterecurso:
-                                        
-                                        fuenterecurso_serializers =Fuenterecursoserializers(fuenterecurso)
-                                        fuenterecursoid = dict(fuenterecurso_serializers.data)
-                                        data.update({"fuenterecursoid":fuenterecursoid['id']})
-                                        if buscarfuenterecursoproyeccion(fuenterecursoid['id'],institucioneducativaid['id'])==True:
-                                            consecutivo = consultarconsecutivo(1,institucioneducativaid['id'])
-                                            data['consecutivo'] = consecutivo
-                                            ingresopresupuestal_serializers = Ingresopresupuestalserializers(data = request.data)                                             
-                                            if ingresopresupuestal_serializers.is_valid():                                                
-                                                try:
-                                                    ingresopresupuestal_serializers.save()
-                                                    actualizarconsecutivo(1,institucioneducativaid['id'],consecutivo)
-                                                    return Response(ingresopresupuestal_serializers.data,status = status.HTTP_201_CREATED)
-                                                except IntegrityError:
-                                                    return Response('error ingreso presupuestal documento duplicado para institucion educativa',status = status.HTTP_400_BAD_REQUEST)
-                                            return Response(ingresopresupuestal_serializers.errors, status = status.HTTP_400_BAD_REQUEST)
-                                        return Response('fuente recurso no tiene proyeccion presupuestal asignada o el periodo esta cerrado',status = status.HTTP_400_BAD_REQUEST)
-                                    return Response('fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
-                                return Response('falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)                                
-                            return Response('tercero no existe',status = status.HTTP_400_BAD_REQUEST)    
+                                        if fuenterecurso:
+                                            
+                                            fuenterecurso_serializers =Fuenterecursoserializers(fuenterecurso)
+                                            fuenterecursoid = dict(fuenterecurso_serializers.data)
+                                            data.update({"fuenterecursoid":fuenterecursoid['id']})
+                                            if buscarfuenterecursoproyeccion(fuenterecursoid['id'],institucioneducativaid['id'])==True:
+                                                consecutivo = consultarconsecutivo(1,institucioneducativaid['id'])
+                                                data['consecutivo'] = consecutivo
+                                                ingresopresupuestal_serializers = Ingresopresupuestalserializers(data = request.data)
+                                                if saldofuenterecursoporingreso(fuenterecursoid['id'],institucioneducativaid['id'],data['valor'])==True:                                             
+                                                    if ingresopresupuestal_serializers.is_valid():                                                
+                                                        try:
+                                                            ingresopresupuestal_serializers.save()
+                                                            actualizarconsecutivo(1,institucioneducativaid['id'],consecutivo)
+                                                            return Response(ingresopresupuestal_serializers.data,status = status.HTTP_201_CREATED)
+                                                        except IntegrityError:
+                                                            return Response('error ingreso presupuestal documento duplicado para institucion educativa',status = status.HTTP_400_BAD_REQUEST)
+                                                    return Response(ingresopresupuestal_serializers.errors, status = status.HTTP_400_BAD_REQUEST)
+                                                return Response('fuente recurso supera el valor de la proyeccion presupuestal asignada para el periodo',status = status.HTTP_400_BAD_REQUEST)
+                                            return Response('fuente recurso no tiene proyeccion presupuestal asignada o el periodo esta cerrado',status = status.HTTP_400_BAD_REQUEST)
+                                        return Response('fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                                    return Response('falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)                                
+                                return Response('tercero no existe',status = status.HTTP_400_BAD_REQUEST)    
+                            return Response('Tipo identificacion no existe',status = status.HTTP_400_BAD_REQUEST)    
                         return Response('falta el nodo codigo para el tercero',status = status.HTTP_400_BAD_REQUEST) 
                     return Response('falta el nodo terceroid',status = status.HTTP_400_BAD_REQUEST) 
                 return Response('institucion educativa ingresada no existe',status = status.HTTP_400_BAD_REQUEST)

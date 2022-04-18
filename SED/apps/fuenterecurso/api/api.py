@@ -9,11 +9,15 @@ from apps.fuenterecurso.models import Fuenterecurso
 from apps.fuenterecurso.api.serializers import Fuenterecursoserializers
 from django.db.models.deletion import RestrictedError
 from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
+from apps.proyeccionpresupuestaldetalle.api.serializers import ProyeccionpresupuestaldetalleSerializers
 from apps.periodo.models import Periodo
 from apps.periodo.api.serializers import Periodoserializers
 from apps.proyeccionpresupuestalcabecera.models import Proyeccionpresupuestalcabecera
 from apps.proyeccionpresupuestalcabecera.api.serializers import ProyeccionpresupuestalcabeceraSerializers
 from apps.ingresopresupuestal.models import Ingresopresupuestal
+from apps.institucioneducativa.models import Institucioneducativa
+from apps.institucioneducativa.api.serializers import InstitucioneducativaSerializer
+from django.db.models import Count,Sum
 
 @api_view(['GET','POST'])
 def fuenterecurso_api_view(request):
@@ -157,5 +161,103 @@ def buscarfuenterecursoingresopresupuestal(fuenterecursoid, institucioneducativa
         return False    
     
 
-      
+@api_view(['GET'])
+def fuenterecurso_proyeccion_api_view(request, codigoinstitucioneducativa = None):
+    
+    if request.method =='GET':
+        codigoperiodo = 0
+        periodo = Periodo.objects.filter(activo = True).first()
+        if periodo:
+            codigoperiodo = periodo.id
+
+        institucioneducativa_parametros = Institucioneducativa.objects.filter(codigo = codigoinstitucioneducativa).first()
+
+        if institucioneducativa_parametros:            
+            proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=codigoperiodo, institucioneducativaid = institucioneducativa_parametros.id).first() 
+
+            if proyeccionpresupuestalcabecera:   
+                proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Count('fuenterecursoid')).order_by()
+                list_fuentes = [Fuenterecursoserializers(Fuenterecurso.objects.filter(id = fuente['fuenterecursoid']).first()).data for fuente in proyeccionpresupuestaldetalle] 
+                return Response(list_fuentes,status = status.HTTP_200_OK)
+            return Response('no existen datos',status = status.HTTP_400_BAD_REQUEST)
+        return Response('Insitutcion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def saldofuenterecursoporingreso_api_view(request):
+    parametros = dict(request.query_params)
+    if request.method =='GET':
+        codigofuenterecurso=""
+        fuenterecurso_parametros =""
+        codigoinstitucioneducativa = ""
+        institucioneducativa_parametros = ""
+        
+        saldo = 0
+        codigoperiodo = 0
+        periodoid = 0
+        periodo = Periodo.objects.filter(activo = True).first()
+        if periodo:
+            periodoid = periodo.id
+            codigoperiodo = periodo.codigo
+
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa_parametros = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            if institucioneducativa_parametros:            
+                institucioneducativa_parametros_serializer = InstitucioneducativaSerializer(institucioneducativa_parametros)
+                institucioneducativa_parametros = dict(institucioneducativa_parametros_serializer.data)
+            else:
+                institucioneducativa_parametros = dict({"id":0})
+        else:
+            institucioneducativa_parametros = dict({"id":0})
+        
+        if 'codigofuenterecurso' in parametros.keys():
+            codigofuenterecurso = str(parametros["codigofuenterecurso"][0])
+            codigofuenterecurso = codigofuenterecurso.upper()
+
+            fuenterecurso_parametros = Fuenterecurso.objects.filter(codigo = codigofuenterecurso).first()
+            if fuenterecurso_parametros : 
+                fuenterecurso_parametros_serializers = Fuenterecursoserializers(fuenterecurso_parametros)
+                fuenterecurso_parametros = dict(fuenterecurso_parametros_serializers.data)
+            else:
+                fuenterecurso_parametros = dict({"id":0})
+        else:
+            fuenterecurso_parametros = dict({"id":0})
+
+        proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativa_parametros['id'] ).first() 
+
+        if proyeccionpresupuestalcabecera:           
+            proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecurso_parametros['id'],proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+            if proyeccionpresupuestaldetalle:
+                totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
+                ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecurso_parametros['id'], institucioneducativaid = institucioneducativa_parametros['id'], fecha__year = codigoperiodo).values('fuenterecursoid').annotate(total=Sum('valor'))
+                totalingreso = ingresopresupuestal[0]['total']
+                saldo = totalproyeccion - totalingreso
+                return Response(saldo,status = status.HTTP_200_OK)
+            return Response('no existen datos',status = status.HTTP_400_BAD_REQUEST)
+        return Response('no existen datos',status = status.HTTP_400_BAD_REQUEST)  
+
+def saldofuenterecursoporingreso(fuenterecursoid, institucioneducativaid,valoractual):
+    saldo = 0
+    codigoperiodo = 0
+    periodoid = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    if periodo:
+        periodoid = periodo.id
+        codigoperiodo = periodo.codigo
+    
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ).first() 
+
+    if proyeccionpresupuestalcabecera:           
+        proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecursoid,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+        if proyeccionpresupuestaldetalle:
+            totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
+            ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecursoid, institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo).values('fuenterecursoid').annotate(total=Sum('valor'))
+            totalingreso = ingresopresupuestal[0]['total']
+            saldo = totalproyeccion - (totalingreso + valoractual)
+    if saldo > 0:
+        return True
+    else:
+        return False
 
