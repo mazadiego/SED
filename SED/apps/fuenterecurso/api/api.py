@@ -262,7 +262,7 @@ def saldofuenterecursoporingreso(fuenterecursoid, institucioneducativaid,valorac
             else:
                 totalingreso = 0
             saldo = totalproyeccion - (totalingreso + valoractual)
-    if saldo > 0:
+    if saldo >= 0:
         return True
     else:
         return False
