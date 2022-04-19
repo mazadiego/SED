@@ -232,7 +232,10 @@ def saldofuenterecursoporingreso_api_view(request):
             if proyeccionpresupuestaldetalle:
                 totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
                 ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecurso_parametros['id'], institucioneducativaid = institucioneducativa_parametros['id'], fecha__year = codigoperiodo).values('fuenterecursoid').annotate(total=Sum('valor'))
-                totalingreso = ingresopresupuestal[0]['total']
+                if ingresopresupuestal:
+                    totalingreso = ingresopresupuestal[0]['total']
+                else:
+                    totalingreso = 0
                 saldo = totalproyeccion - totalingreso
                 return Response(saldo,status = status.HTTP_200_OK)
             return Response('no existen datos',status = status.HTTP_400_BAD_REQUEST)
