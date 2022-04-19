@@ -257,7 +257,10 @@ def saldofuenterecursoporingreso(fuenterecursoid, institucioneducativaid,valorac
         if proyeccionpresupuestaldetalle:
             totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
             ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecursoid, institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo).values('fuenterecursoid').annotate(total=Sum('valor'))
-            totalingreso = ingresopresupuestal[0]['total']
+            if ingresopresupuestal:
+                totalingreso = ingresopresupuestal[0]['total']
+            else:
+                totalingreso = 0
             saldo = totalproyeccion - (totalingreso + valoractual)
     if saldo > 0:
         return True
