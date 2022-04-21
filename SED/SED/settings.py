@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'apps.proyeccionpresupuestaldetalle.apps.ProyeccionpresupuestaldetalleConfig',
     'apps.consecutivo.apps.ConsecutivoConfig',
     'apps.ingresopresupuestal.apps.IngresopresupuestalConfig',
+    'apps.recaudopresupuestal.apps.RecaudopresupuestalConfig',
 ]
 
 MIDDLEWARE = [

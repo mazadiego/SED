@@ -42,3 +42,27 @@ JSON-prueba
 		"valor":10000,
 		"fechaproyeccionrecaudo":"2022-04-30"
     }
+
+controlar un solo periodo activo [pendiente]
+
+recaudo presupuestal
+restriccion de tipo logica de negocio 
+no se puede eliminar una vez el rubro presupuestas asociado a la fuente de recuerso que estan en el documento
+de ingreso presupuestal (asignado al recaudo )esté asiganda en un documento de solicitud presupuestal
+json prueba
+{  
+        "institucioneducativaid": {
+			"codigo": "02"
+		},
+		"consecutivo":0,
+		"fecha":"2021-04-30",
+		"tiporecaudoid":{
+			"codigo":"01"
+		},
+		"ingresopresupuestalid":{
+			"consecutivo" :5
+		},
+		"documentorecaudo":"010000010",
+		"observacion":"pruebas",
+		"valor":10000		
+    }

@@ -6,7 +6,7 @@ from apps.fuenterecurso.models import Fuenterecurso
 class Ingresopresupuestal(models.Model):
     institucioneducativaid = models.ForeignKey(Institucioneducativa, on_delete=models.RESTRICT)
     consecutivo = models.PositiveIntegerField(null=False)
-    fecha = models.DateTimeField(null=False)
+    fecha = models.DateField(null=False)
     terceroid = models.ForeignKey(Tercero,on_delete=models.RESTRICT)
     fuenterecursoid = models.ForeignKey(Fuenterecurso,on_delete=models.RESTRICT)
     observacion = models.CharField(max_length=5000,blank=True)

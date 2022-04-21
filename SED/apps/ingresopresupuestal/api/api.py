@@ -20,6 +20,8 @@ from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
 from apps.tipoidentificacion.models import Tipoidentificacion
 from apps.tipoidentificacion.api.serializers import TipoidentificacionSerializer
+from apps.recaudopresupuestal.models import Recaudopresupuestal
+from django.db.models import Count,Sum
 
 @api_view(['GET','POST'])
 def ingresopresupuestal_api_view(request):    
@@ -95,10 +97,38 @@ def ingresopresupuestal_consecutivo_api_view(request):
             ingresopresupuestal_serializers = Ingresopresupuestalserializers(ingresopresupuestal)
             return Response(ingresopresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            ingresopresupuestal.delete()
-            return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
+            try:
+                ingresopresupuestal.delete()
+                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
+            except RestrictedError:
+                return Response('Ingreso presupuestal no puede ser eliminado esta asociado a un documento de recaudo',status = status.HTTP_400_BAD_REQUEST)            
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)
-   
+
+@api_view(['GET'])
+def ingresopresupuestalsaldoporrecaudo_api_view(request):  
+    parametros = dict(request.query_params)
+    if request.method =='GET':
+        codigoinstitucioneducativa = ""
+        institucioneducativa_parametros = ""
+        consecutivo = 0
+
+        if 'consecutivo' in parametros.keys():
+            consecutivo = parametros["consecutivo"][0]
+
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa_parametros = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            if institucioneducativa_parametros:            
+                return Response(saldoingresoporrecaudo(institucioneducativa_parametros.id,consecutivo),status = status.HTTP_200_OK)
+            else:
+                return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+
+        
+
 def buscaringresopresupuestal(request):
         parametros = dict(request.query_params)
         codigoperiodo = 0
@@ -156,3 +186,18 @@ def buscaringresopresupuestalconsecutivo(request):
         ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativa_parametros['id'], consecutivo = consecutivo).first()
         return ingresopresupuestal
 
+def saldoingresoporrecaudo(institucioneducativaid,consecutivo):
+    totalingreso = 0
+    saldo = 0
+    totalrecaudo = 0
+    ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, consecutivo = consecutivo).first()
+
+    if ingresopresupuestal:
+        totalingreso = ingresopresupuestal.valor
+        recaudopresupuestal = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id).values('ingresopresupuestalid').annotate(total=Sum('valor'))
+        if recaudopresupuestal :
+            totalrecaudo = recaudopresupuestal[0]['total']
+
+    saldo = totalingreso  - totalrecaudo
+
+    return saldo
