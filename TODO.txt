@@ -43,9 +43,9 @@ JSON-prueba
 		"fechaproyeccionrecaudo":"2022-04-30"
     }
 
-controlar un solo periodo activo [pendiente]
-
-recaudo presupuestal
+Recaudo presupuestal
+--Colocar requerida la observación
+--NO permitir existan 2 periodos abiertos
 restriccion de tipo logica de negocio 
 no se puede eliminar una vez el rubro presupuestas asociado a la fuente de recuerso que estan en el documento
 de ingreso presupuestal (asignado al recaudo )esté asiganda en un documento de solicitud presupuestal
