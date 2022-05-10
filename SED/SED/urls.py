@@ -32,4 +32,6 @@ urlpatterns = [
     path('proyeccionpresupuestaldetalle/',include('apps.proyeccionpresupuestaldetalle.api.urls')),
     path('ingresopresupuestal/',include('apps.ingresopresupuestal.api.urls')),
     path('recaudopresupuestal/',include('apps.recaudopresupuestal.api.urls')),
+    path('solicitudpresupuestalcabecera/',include('apps.solicitudpresupuestalcabecera.api.urls')),
+    path('solicitudpresupuestaldetalle/',include('apps.solicitudpresupuestaldetalle.api.urls')),
 ]

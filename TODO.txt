@@ -44,11 +44,11 @@ JSON-prueba
     }
 
 Recaudo presupuestal
---Colocar requerida la observación
---NO permitir existan 2 periodos abiertos
+--Colocar requerida la observación[resuleto]
+--NO permitir existan 2 periodos abiertos[pendiente]
 restriccion de tipo logica de negocio 
-no se puede eliminar una vez el rubro presupuestas asociado a la fuente de recuerso que estan en el documento
-de ingreso presupuestal (asignado al recaudo )esté asiganda en un documento de solicitud presupuestal
+no se puede eliminar una vez el rubro presupuestas asociado a la fuente de recurso que estan en el documento
+de ingreso presupuestal (asignado al recaudo )esté asiganda en un documento de solicitud presupuestal[pendiente]
 json prueba
 {  
         "institucioneducativaid": {
@@ -66,3 +66,45 @@ json prueba
 		"observacion":"pruebas",
 		"valor":10000		
     }
+
+solicitud presupuestal 
+la suma de las solitidudes no puede superar el valor proyectado rubro[resuleto]
+metodo rubro institucion educativa y devolver saldo con respecto a la proyeccion[resuleto]
+ejemplo cabecera 
+{  
+        "institucioneducativaid": {
+			"codigo": "02"
+		},
+		"consecutivo":0,
+		"fecha":"2021-04-30",
+		"observacion":"pruebas",
+		"personalplantaidsolicitante": {
+			"codigo": "1"
+		},
+		"personalplantaidsolicitado": {
+			"codigo": "12"
+		},	
+		"terceroid": {
+			"codigo": "1128047055",
+			"tipoidentificacion":"CC"
+		},
+		"tipocontratoid": {
+			"codigo": "10"
+		},
+		"fechainiciocontrato":"2021-04-30",
+		"fechafincontrato":"2021-04-30",
+		"contratonumero":"0100000254"				
+    }
+	ejemplo detalle
+	{
+	"solicitudpresupuestalcabeceraid":
+		{
+			"consecutivo": "3", 
+			"codigoinstitucioneducativa": "02"
+		},
+	"rubropresupuestalid":
+		{
+			"codigo":"0101"
+		},
+	"valor":5000
+	}

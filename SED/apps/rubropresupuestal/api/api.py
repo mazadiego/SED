@@ -9,7 +9,12 @@ from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.rubropresupuestal.api.serializers import Rubropresupuestalserializers
 from django.db.models.deletion import RestrictedError
 from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
-
+from apps.periodo.models import Periodo
+from apps.proyeccionpresupuestalcabecera.models import Proyeccionpresupuestalcabecera
+from django.db.models import Count,Sum
+from apps.solicitudpresupuestalcabecera.models import Solicitudpresupuestalcabecera
+from apps.solicitudpresupuestaldetalle.models import Solicitudpresupuestaldetalle
+from apps.institucioneducativa.models import Institucioneducativa
 
 @api_view(['GET','POST'])
 def rubropresupuestal_api_view(request):
@@ -112,6 +117,74 @@ def buscarrubropresupuestal_final(data):
         if Rubropresupuestal.objects.filter(idpadre = rubropresupuestal.id).count()==0:
             return rubropresupuestal
 
+@api_view(['GET'])
+def saldorubroporproyeccion_final_api_view(request):
+
+    parametros = dict(request.query_params)
+    if request.method =='GET':
+        codigoinstitucioneducativa = ""
+        institucioneducativaid = 0
+        codigorubropresupuestal = ""
+        rubropresupuestalid = 0
+        
+        
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            if institucioneducativa:  
+                institucioneducativaid = institucioneducativa.id
+            else:
+                return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+
+        if 'codigorubropresupuestal' in parametros.keys():
+            codigorubropresupuestal = parametros['codigorubropresupuestal'][0]
+            rubropresupuestal = Rubropresupuestal.objects.filter(codigo = codigorubropresupuestal).first()
+
+            if rubropresupuestal:
+                rubropresupuestalid = rubropresupuestal.id
+            else:
+                return Response('rubropresupuestal no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('rubropresupuestal no existe',status = status.HTTP_400_BAD_REQUEST)
+        
+        
+        return Response(saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid),status = status.HTTP_200_OK)
+
+        
+
+def saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid):
+    saldo = 0
+    codigoperiodo = 0
+    periodoid = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    totalproyeccion = 0
+    totalsolicitudes = 0
+    if periodo:
+        periodoid = periodo.id
+        codigoperiodo = periodo.codigo
+    
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ).first() 
+    
+    if proyeccionpresupuestalcabecera:           
+        proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = rubropresupuestalid,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('rubropresupuestalid').annotate(total=Sum('valor')).order_by()
+        if proyeccionpresupuestaldetalle:
+            totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
+
+    solicitudes = Solicitudpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativaid,fecha__year = codigoperiodo).all()
+   
+    for solicitud in solicitudes:
+        solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.filter(rubropresupuestalid=rubropresupuestalid,solicitudpresupuestalcabeceraid=solicitud.id).values('rubropresupuestalid').annotate(total=Sum('valor')).order_by()
+        if solicitudpresupuestaldetalle:
+            totalsolicitudes = totalsolicitudes + solicitudpresupuestaldetalle[0]['total']
+
+    
+    saldo = totalproyeccion - totalsolicitudes 
+
+    return saldo
         
     
 

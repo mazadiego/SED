@@ -10,7 +10,7 @@ class Recaudopresupuestal(models.Model):
     ingresopresupuestalid = models.ForeignKey(Ingresopresupuestal,on_delete=models.RESTRICT)
     tiporecaudoid = models.ForeignKey(Tiporecaudo,on_delete=models.RESTRICT)
     documentorecaudo= models.CharField(max_length=500,null=False)
-    observacion = models.CharField(max_length=5000,blank=True)
+    observacion = models.CharField(max_length=5000,null=False)
     valor = models.DecimalField(max_digits=18,decimal_places=6,null=False)
     
     class Meta:

@@ -54,6 +54,9 @@ INSTALLED_APPS = [
     'apps.consecutivo.apps.ConsecutivoConfig',
     'apps.ingresopresupuestal.apps.IngresopresupuestalConfig',
     'apps.recaudopresupuestal.apps.RecaudopresupuestalConfig',
+    'apps.solicitudpresupuestalcabecera.apps.SolicitudpresupuestalcabeceraConfig',
+    'apps.solicitudpresupuestaldetalle.apps.SolicitudpresupuestaldetalleConfig',
+    
 ]
 
 MIDDLEWARE = [
