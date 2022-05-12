@@ -70,6 +70,12 @@ json prueba
 solicitud presupuestal 
 la suma de las solitidudes no puede superar el valor proyectado rubro[resuleto]
 metodo rubro institucion educativa y devolver saldo con respecto a la proyeccion[resuleto]
+
+El sistema no debe permitir meter 2 veces el mismo rubro en una solicitud presupuestal [PENDIENTE]
+Se requiere un metodo que me liste solos los rubros que estan asociados a la proyeccion del periodo activo [PENDIENTE]
+Se requiere un metodo que devuelva el saldo del rubro proyectado [PENDIENTE]
+El sistema no debe permitir eliminar un rubro de la proyeccion, si este ya esta relacionado en una solicitud [PENDIENTE]
+
 ejemplo cabecera 
 {  
         "institucioneducativaid": {
