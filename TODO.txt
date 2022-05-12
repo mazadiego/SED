@@ -108,3 +108,24 @@ ejemplo cabecera
 		},
 	"valor":5000
 	}
+
+	CDP
+	--restricciones debe existir recaudo en el rubro 
+	CDP no puede sobrepasar lo solicitado la suma de los cdp no puede ser mayor que los recaudos del rubro[pendiente]
+
+	--api saldo rubro solicitudes
+	--api saldo rubro por recaudos
+	{
+	"institucioneducativaid": {
+			"codigo": "02"
+		},
+	"consecutivo":0,
+	"fecha":"2021-04-30",
+	"diasvalidez":30,	
+	"rubropresupuestalid":
+		{
+			"codigo":"0101"
+		},
+	"observacion":"pruebas",
+	"valor":5000
+	}
