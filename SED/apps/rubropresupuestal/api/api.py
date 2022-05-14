@@ -15,6 +15,7 @@ from django.db.models import Count,Sum
 from apps.solicitudpresupuestalcabecera.models import Solicitudpresupuestalcabecera
 from apps.solicitudpresupuestaldetalle.models import Solicitudpresupuestaldetalle
 from apps.institucioneducativa.models import Institucioneducativa
+from apps.proyeccionpresupuestaldetalle.api.serializers import ProyeccionpresupuestaldetalleSerializers
 
 @api_view(['GET','POST'])
 def rubropresupuestal_api_view(request):
@@ -111,6 +112,42 @@ def rubropresupuestal_final_api_view(request):
         list_rubros = [rubro for rubro in rubropresupuestal_serializer.data if Rubropresupuestal.objects.filter(idpadre = rubro['id']).count() == 0]  
         return Response(list_rubros,status = status.HTTP_200_OK)
 
+@api_view(['GET'])
+def rubropresupuestal_proyectados_api_view(request):
+    periodoid=0
+    parametros = dict(request.query_params)        
+    codigoinstitucioneducativa = ""
+    institucioneducativaid = 0
+    
+
+    if request.method =='GET':
+        periodo = Periodo.objects.filter(activo = True).first()
+
+        if periodo:
+            periodoid = periodo.id
+        
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            
+            if institucioneducativa:            
+                institucioneducativaid = institucioneducativa.id                
+
+        proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid,institucioneducativaid=institucioneducativaid).first()        
+        if proyeccionpresupuestalcabecera:            
+            proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(proyeccionpresupuestalid=proyeccionpresupuestalcabecera.id).values('rubropresupuestalid').annotate(total=Sum('valor'))
+            if proyeccionpresupuestaldetalle:                
+                list_rubros = [Rubropresupuestal.objects.filter(id = rubro['rubropresupuestalid']).first() for rubro in proyeccionpresupuestaldetalle]
+                if list_rubros:
+                    rubropresupuestal_serializer = Rubropresupuestalserializers(list_rubros, many=True)
+                    return Response(rubropresupuestal_serializer.data,status = status.HTTP_200_OK)
+                return Response('No existen datos de rubros asociados al detalle la proyeccion del periodo actual',status = status.HTTP_400_BAD_REQUEST)
+            return Response('No existen datos de detalle para el documento de proyeccion del periodo actual',status = status.HTTP_400_BAD_REQUEST)        
+        return Response('No existen datos de proyeccion para la institucion educativa ',status = status.HTTP_400_BAD_REQUEST)
+
+
 def buscarrubropresupuestal_final(data):
     rubropresupuestal = Rubropresupuestal.objects.filter(codigo = data['codigo']).first()
     if rubropresupuestal:
@@ -185,7 +222,20 @@ def saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid):
     saldo = totalproyeccion - totalsolicitudes 
 
     return saldo
-        
+
+def buscarrubro_solicitud(institucioneducativaid,rubropresupuestalid):
+    codigoperiodo = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    
+    if periodo:
+        codigoperiodo = periodo.codigo     
+
+    if Solicitudpresupuestaldetalle.objects.select_related('solicitudpresupuestalcabeceraid').filter(solicitudpresupuestalcabeceraid__institucioneducativaid__id=institucioneducativaid,solicitudpresupuestalcabeceraid__fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).count()>0:
+        return True
+    else:
+        return False
+    
+    
     
 
       

@@ -43,19 +43,19 @@ def solicitudpresupuestaldetalle_api_view(request):
                 else:
                     return Response("rubro presupuestal no existe",status = status.HTTP_400_BAD_REQUEST)                             
             else:
-                return Response("falta el nodo codigo para consultar rubro presupuestal",status = status.HTTP_400_BAD_REQUEST)                         
-            
+                return Response("falta el nodo codigo para consultar rubro presupuestal",status = status.HTTP_400_BAD_REQUEST)
         else:
-            return Response("falta el nodo rubropresupuestalid consultar rubro presupuestal",status = status.HTTP_400_BAD_REQUEST)   
-       
-        solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(data=request.data)
-        if validarsaldorubroporproyeccion(solicitudpresupuestalcabeceraid['codigoinstitucioneducativa'],rubropresupuestal.id,request.data['valor'])==True:
-            if solicitudpresupuestaldetalle_serializers.is_valid():
-                solicitudpresupuestaldetalle_serializers.save()
-                return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
-            return Response(solicitudpresupuestaldetalle_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
-        else:
+            return Response("falta el nodo rubropresupuestalid consultar rubro presupuestal",status = status.HTTP_400_BAD_REQUEST)  
+
+        if Solicitudpresupuestaldetalle.objects.filter(solicitudpresupuestalcabeceraid=solicitudpresupuestalcabecera.id,rubropresupuestalid=rubropresupuestal.id).count()==0:
+            solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(data=request.data)
+            if validarsaldorubroporproyeccion(solicitudpresupuestalcabeceraid['codigoinstitucioneducativa'],rubropresupuestal.id,request.data['valor'])==True:
+                if solicitudpresupuestaldetalle_serializers.is_valid():
+                    solicitudpresupuestaldetalle_serializers.save()
+                    return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
+                return Response(solicitudpresupuestaldetalle_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
             return Response("el valor del rubro presupuestal supera el saldo proyectado",status = status.HTTP_400_BAD_REQUEST) 
+        return Response("el rubro presupuestal ya esta registrado en el documento",status = status.HTTP_400_BAD_REQUEST) 
         
     else: 
              

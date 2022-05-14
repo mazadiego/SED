@@ -16,6 +16,7 @@ from apps.proyeccionpresupuestalcabecera.api.api import buscarproyeccionpresupue
 from apps.fuenterecurso.models import Fuenterecurso
 from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.fuenterecurso.api.api import  buscarfuenterecursoingresopresupuestal
+from apps.rubropresupuestal.api.api import buscarrubro_solicitud
 
 
 @api_view(['GET','POST','DELETE'])
@@ -77,10 +78,13 @@ def proyeccionpresupuestaldetalle_api_view(request):
                     return Response(proyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
                 elif request.method =='DELETE':
                     proyeccionpresupuestaldetalle_dict = dict(proyeccionpresupuestaldetalle_serializers.data)
-                    fuenterecurso = proyeccionpresupuestaldetalle_dict['fuenterecursoid']                    
+                    fuenterecurso = proyeccionpresupuestaldetalle_dict['fuenterecursoid']   
+                    rubropresupuestal = proyeccionpresupuestaldetalle_dict['rubropresupuestalid']     
                     if buscarfuenterecursoingresopresupuestal(fuenterecurso['id'],institucioneducativa['id'])==False:
-                        proyeccionpresupuestaldetalle.delete()
-                        return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                        if buscarrubro_solicitud(institucioneducativa['id'],rubropresupuestal['id'])==False:
+                            proyeccionpresupuestaldetalle.delete()
+                            return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                        return Response("Rubro no puede ser eliminado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
                     return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)
         return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 

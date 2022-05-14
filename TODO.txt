@@ -71,10 +71,12 @@ solicitud presupuestal
 la suma de las solitidudes no puede superar el valor proyectado rubro[resuleto]
 metodo rubro institucion educativa y devolver saldo con respecto a la proyeccion[resuleto]
 
-El sistema no debe permitir meter 2 veces el mismo rubro en una solicitud presupuestal [PENDIENTE]
-Se requiere un metodo que me liste solos los rubros que estan asociados a la proyeccion del periodo activo [PENDIENTE]
-Se requiere un metodo que devuelva el saldo del rubro proyectado [PENDIENTE]
-El sistema no debe permitir eliminar un rubro de la proyeccion, si este ya esta relacionado en una solicitud [PENDIENTE]
+El sistema no debe permitir meter 2 veces el mismo rubro en una solicitud presupuestal [resuleto]
+Se requiere un metodo que me liste solos los rubros que estan asociados a la proyeccion del periodo activo [resuelto]
+http://127.0.0.1:8000/rubropresupuestal/detalle/proyectados/?codigoinstitucioneducativa=02
+Se requiere un metodo que devuelva el saldo del rubro proyectado [resuelto]
+http://127.0.0.1:8000/rubropresupuestal/detalle/saldoporproyeccion/?codigoinstitucioneducativa=02&codigorubropresupuestal=0101
+El sistema no debe permitir eliminar un rubro de la proyeccion, si este ya esta relacionado en una solicitud [resuelto]
 
 ejemplo cabecera 
 {  
