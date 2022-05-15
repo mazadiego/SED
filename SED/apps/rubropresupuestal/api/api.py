@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework import status
 
+
 from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.rubropresupuestal.api.serializers import Rubropresupuestalserializers
 from django.db.models.deletion import RestrictedError
@@ -15,7 +16,9 @@ from django.db.models import Count,Sum
 from apps.solicitudpresupuestalcabecera.models import Solicitudpresupuestalcabecera
 from apps.solicitudpresupuestaldetalle.models import Solicitudpresupuestaldetalle
 from apps.institucioneducativa.models import Institucioneducativa
-from apps.proyeccionpresupuestaldetalle.api.serializers import ProyeccionpresupuestaldetalleSerializers
+from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponibilidadpresupuestal
+from apps.ingresopresupuestal.models import Ingresopresupuestal
+from apps.recaudopresupuestal.models import Recaudopresupuestal
 
 @api_view(['GET','POST'])
 def rubropresupuestal_api_view(request):
@@ -162,8 +165,7 @@ def saldorubroporproyeccion_final_api_view(request):
         codigoinstitucioneducativa = ""
         institucioneducativaid = 0
         codigorubropresupuestal = ""
-        rubropresupuestalid = 0
-        
+        rubropresupuestalid = 0        
         
         if 'codigoinstitucioneducativa' in parametros.keys():
             codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
@@ -234,6 +236,56 @@ def buscarrubro_solicitud(institucioneducativaid,rubropresupuestalid):
         return True
     else:
         return False
+
+def saldo_rubro_solicitud(institucioneducativaid,rubropresupuestalid):
+    codigoperiodo = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    saldo = 0
+
+    if periodo:
+        codigoperiodo = periodo.codigo     
+
+    solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.select_related('solicitudpresupuestalcabeceraid').filter(solicitudpresupuestalcabeceraid__institucioneducativaid__id=institucioneducativaid,solicitudpresupuestalcabeceraid__fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).values('rubropresupuestalid').annotate(total=Sum('valor'))
+    
+    if solicitudpresupuestaldetalle:
+        saldo = solicitudpresupuestaldetalle[0]['total']
+    return saldo
+
+def saldo_rubro_cdp(institucioneducativaid,rubropresupuestalid):
+    codigoperiodo = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    saldo = 0
+
+    if periodo:
+        codigoperiodo = periodo.codigo     
+
+    cdp = Certificadodisponibilidadpresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).values('rubropresupuestalid').annotate(total=Sum('valor'))
+    
+    if cdp:
+        saldo = cdp[0]['total']
+    return saldo
+
+
+def saldo_rubro_recaudos(institucioneducativaid,rubropresupuestalid):
+    codigoperiodo = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    saldo = 0
+    periodoid= 0
+    if periodo:
+        periodoid = periodo.id
+        codigoperiodo = periodo.codigo     
+
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ).first() 
+    
+    if proyeccionpresupuestalcabecera:           
+        fuenterecursos = Proyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = rubropresupuestalid,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid','rubropresupuestalid').all()
+    if fuenterecursos:
+        ingresos = [Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo,fuenterecursoid = fuente['fuenterecursoid']).all() for fuente in fuenterecursos if Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo,fuenterecursoid = fuente['fuenterecursoid']).count()>0]
+        for ingresopresupuestal in ingresos:            
+            recaudos = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal[0].id).values('ingresopresupuestalid').annotate(total=Sum('valor'))
+            if recaudos:
+                saldo = saldo + recaudos[0]['total']
+    return saldo
     
     
     

@@ -119,7 +119,8 @@ ejemplo cabecera
 
 	CDP
 	--restricciones debe existir recaudo en el rubro 
-	CDP no puede sobrepasar lo solicitado la suma de los cdp no puede ser mayor que los recaudos del rubro[pendiente]
+	CDP no puede sobrepasar lo solicitado [resuelto]
+	la suma de los cdp no puede ser mayor que los recaudos del rubro[pendiente]
 
 	--api saldo rubro solicitudes
 	--api saldo rubro por recaudos

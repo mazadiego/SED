@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'apps.recaudopresupuestal.apps.RecaudopresupuestalConfig',
     'apps.solicitudpresupuestalcabecera.apps.SolicitudpresupuestalcabeceraConfig',
     'apps.solicitudpresupuestaldetalle.apps.SolicitudpresupuestaldetalleConfig',
+    'apps.certificadodisponibilidadpresupuestal.apps.CertificadodisponibilidadpresupuestalConfig',
     
 ]
 
