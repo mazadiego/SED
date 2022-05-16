@@ -120,7 +120,7 @@ ejemplo cabecera
 	CDP
 	--restricciones debe existir recaudo en el rubro 
 	CDP no puede sobrepasar lo solicitado [resuelto]
-	la suma de los cdp no puede ser mayor que los recaudos del rubro[pendiente]
+	la suma de los cdp no puede ser mayor que los recaudos del rubro[resuelto]
 
 	--api saldo rubro solicitudes
 	--api saldo rubro por recaudos
@@ -138,3 +138,8 @@ ejemplo cabecera
 	"observacion":"pruebas",
 	"valor":5000
 	}
+
+	metodo saldorecaudo
+	http://127.0.0.1:8000/rubropresupuestal/detalle/saldorecaudo/?codigoinstitucioneducativa=02&codigorubropresupuestal=0101
+	metodo saldosolicitud
+	http://127.0.0.1:8000/rubropresupuestal/detalle/saldosolicitud/?codigoinstitucioneducativa=02&codigorubropresupuestal=0101
