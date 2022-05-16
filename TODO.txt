@@ -140,3 +140,8 @@ ejemplo cabecera
 	"observacion":"pruebas",
 	"valor":5000
 	}
+
+	metodo saldorecaudo
+	http://127.0.0.1:8000/rubropresupuestal/detalle/saldorecaudo/?codigoinstitucioneducativa=02&codigorubropresupuestal=0101
+	metodo saldosolicitud
+	http://127.0.0.1:8000/rubropresupuestal/detalle/saldosolicitud/?codigoinstitucioneducativa=02&codigorubropresupuestal=0101

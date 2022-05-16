@@ -193,7 +193,91 @@ def saldorubroporproyeccion_final_api_view(request):
         
         return Response(saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid),status = status.HTTP_200_OK)
 
+@api_view(['GET'])
+def saldorubro_solicitud_api_view(request):
+
+    parametros = dict(request.query_params)
+    if request.method =='GET':
+        saldo = 0
+        totalsolicitudes = 0
+        totalcdp=0
+        codigoinstitucioneducativa = ""
+        institucioneducativaid = 0
+        codigorubropresupuestal = ""
+        rubropresupuestalid = 0        
         
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            if institucioneducativa:  
+                institucioneducativaid = institucioneducativa.id
+            else:
+                return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+
+        if 'codigorubropresupuestal' in parametros.keys():
+            codigorubropresupuestal = parametros['codigorubropresupuestal'][0]
+            rubropresupuestal = Rubropresupuestal.objects.filter(codigo = codigorubropresupuestal).first()
+
+            if rubropresupuestal:
+                rubropresupuestalid = rubropresupuestal.id
+            else:
+                return Response('rubropresupuestal no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('rubropresupuestal no existe',status = status.HTTP_400_BAD_REQUEST)
+        
+        totalsolicitudes = saldo_rubro_solicitud(institucioneducativaid,rubropresupuestalid)
+        totalcdp = saldo_rubro_cdp(institucioneducativaid,rubropresupuestalid)
+        saldo = totalsolicitudes - totalcdp
+        
+        return Response(saldo,status = status.HTTP_200_OK)
+
+@api_view(['GET'])
+def saldorubro_recaudo_api_view(request):
+
+    parametros = dict(request.query_params)
+    
+    if request.method =='GET':
+        saldo = 0
+        totalrecaudos= 0
+        totalcdp=0
+        codigoinstitucioneducativa = ""
+        institucioneducativaid = 0
+        codigorubropresupuestal = ""
+        rubropresupuestalid = 0        
+        
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            if institucioneducativa:  
+                institucioneducativaid = institucioneducativa.id
+            else:
+                return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+
+        if 'codigorubropresupuestal' in parametros.keys():
+            codigorubropresupuestal = parametros['codigorubropresupuestal'][0]
+            
+            rubropresupuestal = Rubropresupuestal.objects.filter(codigo = codigorubropresupuestal).first()
+
+            if rubropresupuestal:
+                rubropresupuestalid = rubropresupuestal.id
+            else:
+                return Response('rubropresupuestal no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('rubropresupuestal no existe',status = status.HTTP_400_BAD_REQUEST)
+        
+        totalrecaudos = saldo_rubro_recaudos(institucioneducativaid,rubropresupuestalid)
+        totalcdp = saldo_rubro_cdp(institucioneducativaid,rubropresupuestalid)
+        saldo = totalrecaudos - totalcdp
+        
+        return Response(saldo,status = status.HTTP_200_OK)      
 
 def saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid):
     saldo = 0
