@@ -122,10 +122,15 @@ ejemplo cabecera
 	CDP no puede sobrepasar lo solicitado [resuelto]
 	la suma de los cdp no puede ser mayor que los recaudos del rubro[resuelto]
 
-	--api saldo rubro solicitudes [POR PROBAR]
-	--api saldo rubro por recaudos [POR PROBAR]
+	--api saldo rubro solicitudes [resuelto]
+	--api saldo rubro por recaudos [resuelto]
+
 	--Se necesita un metodo que me liste solo los rubros asociados a una solicitud por institucion educativa y periodo activo [PENDIENTE]
 	--Validar que la fecha de la cabecera pertenezca al periodo activo [PENDIENTE]
+	--EL sistema no debe permitir eliminar un recaudo si existe un cdp de un rubro asociado a la fuente del recaudo [PENDIENTE]
+	--El sistema no debe permitir eliminar un rubro detalle en la solicitud, si ya existe un cdp asociado a ese rubro [PENDIENTE]
+	--NO permitir existan 2 periodos abiertos[pendiente]
+	
 	{
 	"institucioneducativaid": {
 			"codigo": "02"
