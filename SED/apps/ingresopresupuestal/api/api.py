@@ -44,12 +44,8 @@ def ingresopresupuestal_api_view(request):
                     data.update({"institucioneducativaid": institucioneducativaid['id']})
                     if 'terceroid' in data.keys():
                         terceroid = data.pop('terceroid')
-                        if 'codigo' in terceroid.keys() and 'tipoidentificacion' in terceroid.keys():                            
-                            tipoidentificacion = Tipoidentificacion.objects.filter(codigo = terceroid['tipoidentificacion']).first()
-                            if tipoidentificacion:                                
-                                tipoidentificacion_serializers = TipoidentificacionSerializer(tipoidentificacion)
-                                tipoidentificacion = dict(tipoidentificacion_serializers.data)
-                                tercero = Tercero.objects.filter(codigo = terceroid['codigo'] ,tipoidentificacionid = tipoidentificacion['id']).first()
+                        if 'codigo' in terceroid.keys():   
+                                tercero = Tercero.objects.filter(codigo = terceroid['codigo']).first()
                                 if tercero:
                                     terceroid_serializers = TerceroSerializer(tercero)
                                     terceroid = dict(terceroid_serializers.data)
@@ -81,8 +77,7 @@ def ingresopresupuestal_api_view(request):
                                             return Response('fuente recurso no tiene proyeccion presupuestal asignada o el periodo esta cerrado',status = status.HTTP_400_BAD_REQUEST)
                                         return Response('fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
                                     return Response('falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)                                
-                                return Response('tercero no existe',status = status.HTTP_400_BAD_REQUEST)    
-                            return Response('Tipo identificacion no existe',status = status.HTTP_400_BAD_REQUEST)    
+                                return Response('tercero no existe',status = status.HTTP_400_BAD_REQUEST)                                
                         return Response('falta el nodo codigo para el tercero',status = status.HTTP_400_BAD_REQUEST) 
                     return Response('falta el nodo terceroid',status = status.HTTP_400_BAD_REQUEST) 
                 return Response('institucion educativa ingresada no existe',status = status.HTTP_400_BAD_REQUEST)

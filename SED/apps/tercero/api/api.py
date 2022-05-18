@@ -42,30 +42,9 @@ def tercero_api_view(request):
         return Response('falta el nodo tipoidentificacionid',status = status.HTTP_400_BAD_REQUEST) 
 
 @api_view(['GET','PUT','DELETE'])
-def tercero_details_api_view(request):
-
-    parametros = dict(request.query_params)
-    codigo = ""
-    codigotipoidentificacion = ""
-    tipoidentificacion_parametros = ""    
-
-    if 'codigo' in parametros.keys():
-        codigo = parametros["codigo"][0]
+def tercero_details_api_view(request, codigo = None):    
     
-    
-    if 'tipoidentificacion' in parametros.keys():
-        codigotipoidentificacion = str(parametros["tipoidentificacion"][0])
-        codigotipoidentificacion = codigotipoidentificacion.upper()        
-        tipoidentificacion_parametros = Tipoidentificacion.objects.filter(codigo = codigotipoidentificacion).first()
-        if tipoidentificacion_parametros:            
-            tipoidentificacion_parametros_serializer = TipoidentificacionSerializer(tipoidentificacion_parametros)
-            tipoidentificacion_parametros = dict(tipoidentificacion_parametros_serializer.data)
-        else:
-            tipoidentificacion_parametros = dict({"id":0})
-    else:
-        tipoidentificacion_parametros = dict({"id":0})
-    
-    tercero = Tercero.objects.filter(codigo=codigo, tipoidentificacionid = tipoidentificacion_parametros['id'] ).first()   
+    tercero = Tercero.objects.filter(codigo=codigo).first()   
 
     if tercero:
         if request.method == 'GET':            

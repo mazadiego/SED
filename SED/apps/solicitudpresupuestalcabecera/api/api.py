@@ -77,19 +77,14 @@ def solicitudpresupuestalcabecera_api_view(request):
 
         if 'terceroid' in request.data.keys():
             terceroid = request.data.pop('terceroid')
-            if 'codigo' in terceroid.keys() and 'tipoidentificacion' in terceroid.keys():                
-                tipoidentificacion = Tipoidentificacion.objects.filter(codigo = terceroid['tipoidentificacion']).first()
-                
-                if tipoidentificacion:                                
-                    tercero = Tercero.objects.filter(codigo = terceroid['codigo'] ,tipoidentificacionid = tipoidentificacion.id).first()
+            if 'codigo' in terceroid.keys():                                    
+                    tercero = Tercero.objects.filter(codigo = terceroid['codigo']).first()
                     if tercero:
                         request.data.update({"terceroid": tercero.id})
                     else:
                         return Response("tercero no existe",status = status.HTTP_400_BAD_REQUEST)           
-                else:
-                    return Response("tipo identificacion no existe",status = status.HTTP_400_BAD_REQUEST)           
             else:
-                return Response("falta el nodo codigo/tipoidentificacion para consultar el tercero",status = status.HTTP_400_BAD_REQUEST)       
+                return Response("falta el nodo codigo para consultar el tercero",status = status.HTTP_400_BAD_REQUEST)       
         else:
             return Response("falta el nodo terceroid",status = status.HTTP_400_BAD_REQUEST)   
         
