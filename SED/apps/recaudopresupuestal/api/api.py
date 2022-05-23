@@ -101,10 +101,10 @@ def recaudopresupuestal_consecutivo_api_view(request):
             return Response(recaudopresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
             if validar_recaudo_cdp(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
-                if validar_recaudo_solicitud(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
-                    recaudopresupuestal.delete()
-                    return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-                return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
+                #if validar_recaudo_solicitud(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
+                recaudopresupuestal.delete()
+                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
+                #return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
             return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)
     
