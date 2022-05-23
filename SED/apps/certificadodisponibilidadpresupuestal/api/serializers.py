@@ -55,14 +55,14 @@ class CertificadodisponibilidadpresupuestalSerializers(serializers.ModelSerializ
 
         #saldo CDP vs los recuados por rubro presupuestal
         saldo = saldosrecaudos - (saldocdp + data['valor'])
-        print(saldo)
+        
         if saldo < 0:
             raise serializers.ValidationError("El valor ingresado sobrepasa el saldo por recaudos del rubro presupuestal seleccionado")
 
         
         #saldo CDP vs solicitud por rubro presupuestal
         saldo = saldosolicitud - (saldocdp + data['valor'])
-        print(saldo)
+        
         if saldo < 0:
             raise serializers.ValidationError("El valor ingresado sobrepasa el saldo por soicitud del rubro presupuestal seleccionado")
        

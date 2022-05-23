@@ -9,6 +9,9 @@ from apps.institucioneducativa.models import Institucioneducativa
 from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
+from django.db.models.deletion import RestrictedError
+from apps.registropresupuestal.models import Registropresupuestal
+from django.db.models import Count,Sum
 
 @api_view(['GET','POST'])
 def certificadodisponibilidadpresupuestal_api_view(request):  
@@ -54,7 +57,6 @@ def certificadodisponibilidadpresupuestal_api_view(request):
         certificadodisponibilidadpresupuestal_Serializers = CertificadodisponibilidadpresupuestalSerializers(data = request.data)
 
         if certificadodisponibilidadpresupuestal_Serializers.is_valid(): 
-            #return Response(request.data,status = status.HTTP_201_CREATED)        
             certificadodisponibilidadpresupuestal_Serializers.save()
             actualizarconsecutivo(4,institucioneducativa.id,consecutivo)
             return Response(certificadodisponibilidadpresupuestal_Serializers.data,status = status.HTTP_201_CREATED)        
@@ -68,11 +70,11 @@ def certificadodisponibilidadpresupuestal_consecutivo_api_view(request):
             certificadodisponibilidadpresupuestal_serializers = CertificadodisponibilidadpresupuestalSerializers(certificadodisponibilidadpresupuestal)
             return Response(certificadodisponibilidadpresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            #try:
+            try:
                 certificadodisponibilidadpresupuestal.delete()
                 return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            #except RestrictedError:
-            #    return Response('Solicitud presupuestal no puede ser eliminado',status = status.HTTP_400_BAD_REQUEST)            
+            except RestrictedError:
+                return Response('CDP no puede ser eliminado esta asociado a un Registro Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
         
 
@@ -120,4 +122,50 @@ def buscar_cdp_consecutivo(request):
     
     certificadodisponibilidadpresupuestal = Certificadodisponibilidadpresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, consecutivo = consecutivo).first()
     return certificadodisponibilidadpresupuestal
+
+def saldocdp_por_rp(cdpid):
+    totalcdp=0
+    totalrp=0
+    saldo = 0
+    cdp = Certificadodisponibilidadpresupuestal.objects.filter(id=cdpid).first()
+    if cdp:
+        totalcdp = cdp.valor
+        rp = Registropresupuestal.objects.filter(certificadodisponibilidadpresupuestalid = cdp.id).values('certificadodisponibilidadpresupuestalid').annotate(total=Sum('valor'))
+        if rp:
+            totalrp = rp[0]['total']
+
+    saldo = totalcdp - totalrp
+    return saldo
+
+def saldocdp_por_rp_consecutivo(institucioneducativaid,consecutivo):
+    saldo = 0
+    cdp = Certificadodisponibilidadpresupuestal.objects.filter(institucioneducativaid=institucioneducativaid,consecutivo=consecutivo).first()
+    if cdp:
+        saldo = saldocdp_por_rp(cdp.id)
+    
+    return saldo
+
+@api_view(['GET'])
+def cdp_saldopor_rp_api_view(request):  
+    parametros = dict(request.query_params)
+    if request.method =='GET':
+        codigoinstitucioneducativa = ""
+        institucioneducativa_parametros = ""
+        consecutivo = 0
+
+        if 'consecutivo' in parametros.keys():
+            consecutivo = parametros["consecutivo"][0]
+
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa_parametros = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            if institucioneducativa_parametros:   
+                
+                return Response(saldocdp_por_rp_consecutivo(institucioneducativa_parametros.id,consecutivo),status = status.HTTP_200_OK)
+            else:
+                return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
 

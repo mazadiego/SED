@@ -148,3 +148,23 @@ ejemplo cabecera
 	http://127.0.0.1:8000/rubropresupuestal/detalle/saldorecaudo/?codigoinstitucioneducativa=02&codigorubropresupuestal=0101
 	metodo saldosolicitud
 	http://127.0.0.1:8000/rubropresupuestal/detalle/saldosolicitud/?codigoinstitucioneducativa=02&codigorubropresupuestal=0101
+
+{"RP"}
+	{
+	"institucioneducativaid": {
+			"codigo": "02"
+		},
+	"consecutivo":0,
+	"fecha":"2021-04-30",
+	"terceroid": {
+			"codigo": "1128047055"
+		},
+	"observacion":"pruebas",
+	"certificadodisponibilidadpresupuestalid":
+		{
+			"consecutivo":4
+		},	
+	"valor":10000
+	}
+mtodo CDP Saldo POR Rp 
+http://127.0.0.1:8000/certificadodisponibilidadpresupuestal/consecutivo/saldo/?codigoinstitucioneducativa=02&consecutivo=4
