@@ -15,7 +15,7 @@ from apps.solicitudpresupuestaldetalle.api.serializers import Solicitudpresupues
 from apps.rubropresupuestal.api.api import buscarrubropresupuestal_final
 from apps.rubropresupuestal.api.api import saldorubroporproyeccion
 from apps.institucioneducativa.models import Institucioneducativa
-
+from apps.rubropresupuestal.api.api import buscar_rubro_cdp
 @api_view(['GET','POST','DELETE'])
 def solicitudpresupuestaldetalle_api_view(request):
     if request.method =='POST':
@@ -67,9 +67,10 @@ def solicitudpresupuestaldetalle_api_view(request):
                 if request.method =='GET':
                     return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
                 elif request.method =='DELETE':
-                    #se debe meter un control logico no se puede eliminar una vez ya se haya generado un CDP faltar analizar el control
-                    solicitudpresupuestaldetalle.delete()
-                    return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                    if buscar_rubro_cdp(solicitudpresupuestal.institucioneducativaid.id,solicitudpresupuestaldetalle.rubropresupuestalid.id)==False:
+                        solicitudpresupuestaldetalle.delete()
+                        return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                    return Response("no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)   
         return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
 

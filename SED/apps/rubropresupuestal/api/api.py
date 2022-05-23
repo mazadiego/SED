@@ -150,6 +150,43 @@ def rubropresupuestal_proyectados_api_view(request):
             return Response('No existen datos de detalle para el documento de proyeccion del periodo actual',status = status.HTTP_400_BAD_REQUEST)        
         return Response('No existen datos de proyeccion para la institucion educativa ',status = status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def rubropresupuestal_solicitados_api_view(request):
+    periodoid=0
+    periodocodigo=0
+    parametros = dict(request.query_params)        
+    codigoinstitucioneducativa = ""
+    institucioneducativaid = 0
+    
+
+    if request.method =='GET':
+        periodo = Periodo.objects.filter(activo = True).first()
+
+        if periodo:
+            periodoid = periodo.id
+            periodocodigo = periodo.codigo
+
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            
+            if institucioneducativa:            
+                institucioneducativaid = institucioneducativa.id                
+
+        solicitudpresupuestalcabecera = Solicitudpresupuestalcabecera.objects.filter(fecha__year=periodocodigo,institucioneducativaid=institucioneducativaid).first()        
+        if solicitudpresupuestalcabecera:            
+            solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.filter(solicitudpresupuestalcabeceraid=solicitudpresupuestalcabecera.id).values('rubropresupuestalid').annotate(total=Sum('valor'))
+            if solicitudpresupuestaldetalle:                
+                list_rubros = [Rubropresupuestal.objects.filter(id = rubro['rubropresupuestalid']).first()  for rubro in solicitudpresupuestaldetalle]
+                if list_rubros:
+                    rubropresupuestal_serializer = Rubropresupuestalserializers(list_rubros, many=True)
+                    return Response(rubropresupuestal_serializer.data,status = status.HTTP_200_OK)
+                return Response('No existen datos de rubros asociados al detalle la solicitudes del periodo actual',status = status.HTTP_400_BAD_REQUEST)
+            return Response('No existen datos de detalle para el documento de solicitud',status = status.HTTP_400_BAD_REQUEST)        
+        return Response('No existen datos de silictudes para la institucion educativa ',status = status.HTTP_400_BAD_REQUEST)
+
 
 def buscarrubropresupuestal_final(data):
     rubropresupuestal = Rubropresupuestal.objects.filter(codigo = data['codigo']).first()
@@ -370,6 +407,19 @@ def saldo_rubro_recaudos(institucioneducativaid,rubropresupuestalid):
             if recaudos:
                 saldo = saldo + recaudos[0]['total']
     return saldo
+
+def buscar_rubro_cdp(institucioneducativaid,rubropresupuestalid):
+    codigoperiodo = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    
+    if periodo:
+        codigoperiodo = periodo.codigo     
+
+    if Certificadodisponibilidadpresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).count()>0:
+        return True
+    else:
+        return False
+    
     
     
     

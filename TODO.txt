@@ -44,11 +44,7 @@ JSON-prueba
     }
 
 Recaudo presupuestal
---Colocar requerida la observación[resuleto]
---NO permitir existan 2 periodos abiertos[pendiente]
-restriccion de tipo logica de negocio 
-no se puede eliminar una vez el rubro presupuestas asociado a la fuente de recurso que estan en el documento
-de ingreso presupuestal (asignado al recaudo )esté asiganda en un documento de solicitud presupuestal[pendiente]
+--Colocar requerida la observación[resuelto]
 json prueba
 {  
         "institucioneducativaid": {
@@ -68,10 +64,10 @@ json prueba
     }
 
 solicitud presupuestal 
-la suma de las solitidudes no puede superar el valor proyectado rubro[resuleto]
-metodo rubro institucion educativa y devolver saldo con respecto a la proyeccion[resuleto]
+la suma de las solitidudes no puede superar el valor proyectado rubro[resuelto]
+metodo rubro institucion educativa y devolver saldo con respecto a la proyeccion[resuelto]
 
-El sistema no debe permitir meter 2 veces el mismo rubro en una solicitud presupuestal [resuleto]
+El sistema no debe permitir meter 2 veces el mismo rubro en una solicitud presupuestal [resuelto]
 Se requiere un metodo que me liste solos los rubros que estan asociados a la proyeccion del periodo activo [resuelto]
 http://127.0.0.1:8000/rubropresupuestal/detalle/proyectados/?codigoinstitucioneducativa=02
 Se requiere un metodo que devuelva el saldo del rubro proyectado [resuelto]
@@ -125,11 +121,13 @@ ejemplo cabecera
 	--api saldo rubro solicitudes [resuelto]
 	--api saldo rubro por recaudos [resuelto]
 
-	--Se necesita un metodo que me liste solo los rubros asociados a una solicitud por institucion educativa y periodo activo [PENDIENTE]
-	--Validar que la fecha de la cabecera pertenezca al periodo activo [PENDIENTE]
-	--EL sistema no debe permitir eliminar un recaudo si existe un cdp de un rubro asociado a la fuente del recaudo [PENDIENTE]
-	--El sistema no debe permitir eliminar un rubro detalle en la solicitud, si ya existe un cdp asociado a ese rubro [PENDIENTE]
-	--NO permitir existan 2 periodos abiertos[pendiente]
+	--Se necesita un metodo que me liste solo los rubros asociados a una solicitud por institucion educativa y periodo activo [resuelto]
+		http://127.0.0.1:8000/rubropresupuestal/detalle/solicitados/?codigoinstitucioneducativa=02
+	--Validar que la fecha de la cabecera pertenezca al periodo activo [resuelto]
+	--EL sistema no debe permitir eliminar un recaudo si existe una solicitud de un rubro asociado a la fuente del recaudo [resuelto]
+	--EL sistema no debe permitir eliminar un recaudo si existe un cdp de un rubro asociado a la fuente del recaudo [resuelto]
+	--El sistema no debe permitir eliminar un rubro detalle en la solicitud, si ya existe un cdp asociado a ese rubro [resuelto]
+	--NO permitir existan 2 periodos abiertos[resuelto]
 	
 	{
 	"institucioneducativaid": {

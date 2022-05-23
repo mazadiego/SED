@@ -1,4 +1,5 @@
 from operator import truediv
+from tkinter.tix import Tree
 from urllib import response
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -16,6 +17,8 @@ from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
 from apps.ingresopresupuestal.api.api import saldoingresoporrecaudo
 from django.db.utils import IntegrityError
+from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
+from apps.rubropresupuestal.api.api import buscarrubro_solicitud,buscar_rubro_cdp
 
 @api_view(['GET','POST'])
 def recaudopresupuestal_api_view(request):  
@@ -97,12 +100,12 @@ def recaudopresupuestal_consecutivo_api_view(request):
             recaudopresupuestal_serializers = Recaudopresupuestalserializers(recaudopresupuestal)
             return Response(recaudopresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            #se debe agregar restriccion cuando se haga documento de solicitud presupuestal
-            #try:
-                recaudopresupuestal.delete()
-                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            #except RestrictedError:
-            #    return Response('Ingreso presupuestal no puede ser eliminado esta asociado a un documento de recaudo',status = status.HTTP_400_BAD_REQUEST)            
+            if validar_recaudo_cdp(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
+                if validar_recaudo_solicitud(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
+                    recaudopresupuestal.delete()
+                    return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
+                return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
+            return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)
     
 def buscarrecaudopresupuestalconsecutivo(request):
@@ -168,3 +171,28 @@ def validarsaldoingresoporrecaudo(institucioneducativaid,consecutivoingreso,valo
         return True
     else:
         return False
+
+def validar_recaudo_solicitud(institucioneducativaid,fuenterecursoid):
+
+    validar = False
+    periodo = Periodo.objects.filter(activo = True).first()
+    if periodo:
+        rubros = Proyeccionpresupuestaldetalle.objects.select_related('proyeccionpresupuestalid','proyeccionpresupuestalid__periodoid').values('rubropresupuestalid').filter(proyeccionpresupuestalid__institucioneducativaid =institucioneducativaid,fuenterecursoid=fuenterecursoid,proyeccionpresupuestalid__periodoid__id=periodo.id).all()
+
+        for rubro in rubros:
+            if buscarrubro_solicitud(institucioneducativaid.id,rubro['rubropresupuestalid']):
+                validar = True                
+                break
+    return validar
+
+def validar_recaudo_cdp(institucioneducativaid,fuenterecursoid):
+    validar = False
+    periodo = Periodo.objects.filter(activo = True).first()
+    if periodo:
+        rubros = Proyeccionpresupuestaldetalle.objects.select_related('proyeccionpresupuestalid','proyeccionpresupuestalid__periodoid').values('rubropresupuestalid').filter(proyeccionpresupuestalid__institucioneducativaid =institucioneducativaid,fuenterecursoid=fuenterecursoid,proyeccionpresupuestalid__periodoid__id=periodo.id).all()
+
+        for rubro in rubros:
+            if buscar_rubro_cdp(institucioneducativaid.id,rubro['rubropresupuestalid']):
+                validar = True                
+                break
+    return validar

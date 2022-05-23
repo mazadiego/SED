@@ -6,6 +6,7 @@ from apps.ingresopresupuestal.models import Ingresopresupuestal
 from apps.institucioneducativa.api.serializers import InstitucioneducativaSerializer
 from apps.fuenterecurso.api.serializers import Fuenterecursoserializers
 from apps.tercero.api.serializers import TerceroSerializer
+from apps.periodo.models import Periodo
 
 class Ingresopresupuestalserializers(serializers.ModelSerializer):
 
@@ -17,6 +18,17 @@ class Ingresopresupuestalserializers(serializers.ModelSerializer):
     def validate_valor(self, value):
         if value <=0 or value== None:
             raise serializers.ValidationError("Debe ingresar un valor mayor que cero (0)")
+        return value
+
+    def validate_fecha(selft,value):
+        periodo = Periodo.objects.filter(activo = True).first()
+
+        if periodo:
+            if value.year != periodo.codigo:
+                raise serializers.ValidationError("la fecha no corresponde al periodo actual")
+        else:
+            raise serializers.ValidationError("No Exite un periodo abierto")
+        
         return value
 
     def to_representation(self, instance):

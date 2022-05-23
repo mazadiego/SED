@@ -5,6 +5,7 @@ from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponi
 from apps.institucioneducativa.api.serializers import InstitucioneducativaSerializer
 from apps.rubropresupuestal.api.serializers import Rubropresupuestalserializers
 from apps.rubropresupuestal.api.api import saldo_rubro_solicitud,saldo_rubro_cdp,saldo_rubro_recaudos
+from apps.periodo.models import Periodo
 
 class CertificadodisponibilidadpresupuestalSerializers(serializers.ModelSerializer):
 
@@ -13,8 +14,19 @@ class CertificadodisponibilidadpresupuestalSerializers(serializers.ModelSerializ
         fields=['id','institucioneducativaid','consecutivo','fecha','diasvalidez','rubropresupuestalid','observacion','valor']
 
     def validate_valor(selft,value):
-        if value == None and value<=0:
+        if value == None or value<=0:
             raise serializers.ValidationError("Debe ingresar un valor mayor que cero (0)")
+        return value
+
+    def validate_fecha(selft,value):
+        periodo = Periodo.objects.filter(activo = True).first()
+
+        if periodo:
+            if value.year != periodo.codigo:
+                raise serializers.ValidationError("la fecha no corresponde al periodo actual")
+        else:
+            raise serializers.ValidationError("No Exite un periodo abierto")
+        
         return value
 
     def validate(self, data):
