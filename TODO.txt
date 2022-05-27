@@ -168,3 +168,22 @@ ejemplo cabecera
 	}
 mtodo CDP Saldo POR Rp 
 http://127.0.0.1:8000/certificadodisponibilidadpresupuestal/consecutivo/saldo/?codigoinstitucioneducativa=02&consecutivo=4
+
+{"OP"}
+	{
+	"institucioneducativaid": {
+			"codigo": "02"
+		},
+	"consecutivo":0,
+	"fecha":"2021-04-30",
+	"recibosatisfacion":1,
+	"registropresupuestalid":
+		{
+			"consecutivo":3
+		},
+	"observacion":"pruebas",		
+	"valor":10000
+	}
+
+API RP saldo por OP
+http://127.0.0.1:8000/registropresupuestal/consecutivo/saldo/?codigoinstitucioneducativa=02&consecutivo=4
