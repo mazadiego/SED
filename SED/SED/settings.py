@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'apps.certificadodisponibilidadpresupuestal.apps.CertificadodisponibilidadpresupuestalConfig',
     'apps.registropresupuestal.apps.RegistropresupuestalConfig',
     'apps.obligacionpresupuestal.apps.ObligacionpresupuestalConfig',
+    'apps.pagopresupuestal.apps.PagopresupuestalConfig',
 ]
 
 MIDDLEWARE = [

@@ -37,4 +37,5 @@ urlpatterns = [
     path('certificadodisponibilidadpresupuestal/',include('apps.certificadodisponibilidadpresupuestal.api.urls')),
     path('registropresupuestal/',include('apps.registropresupuestal.api.urls')),
     path('obligacionpresupuestal/',include('apps.obligacionpresupuestal.api.urls')),
+    path('pagopresupuestal/',include('apps.pagopresupuestal.api.urls')),
 ]

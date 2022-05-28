@@ -10,6 +10,9 @@ from apps.obligacionpresupuestal.api.serializers import ObligacionpresupuestalSe
 from apps.institucioneducativa.models import Institucioneducativa
 from apps.registropresupuestal.models import Registropresupuestal
 from apps.periodo.models import Periodo
+from django.db.models.deletion import RestrictedError
+from django.db.models import Count,Sum
+from apps.pagopresupuestal.models import Pagopresupuestal
 
 
 @api_view(['GET','POST'])
@@ -74,12 +77,12 @@ def obligacionpresupuestal_consecutivo_api_view(request):
             obligacionpresupuestal_serializers = ObligacionpresupuestalSerializers(obligacionpresupuestal)
             return Response(obligacionpresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            #hay que meter una restriccion cuando se cree el documento de PAgo presupuestal
-            #try:
+            
+            try:
                 obligacionpresupuestal.delete()
                 return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            #except RestrictedError:
-            #    return Response('RP no puede ser eliminado esta asociado a un Pago Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
+            except RestrictedError:
+                return Response('RP no puede ser eliminado esta asociado a un Pago Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
 
 def buscar_op_consecutivo(request):
@@ -126,3 +129,49 @@ def buscar_obligacionpresupuestal_all(request):
     
     obligacionpresupuestal = Obligacionpresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo).all()
     return obligacionpresupuestal
+
+def saldo_opresu_por_pagopresu(opresuid):
+    totalopresu=0
+    totalpagopresu=0
+    saldo = 0
+    opresu = Obligacionpresupuestal.objects.filter(id=opresuid).first()
+    if opresu:
+        totalopresu = opresu.valor
+        pagopresu = Pagopresupuestal.objects.filter(obligacionpresupuestalid = opresu.id).values('obligacionpresupuestalid').annotate(total=Sum('valor'))
+        if pagopresu:
+            totalpagopresu = pagopresu[0]['total']
+
+    saldo = totalopresu - totalpagopresu
+    return saldo
+
+def saldo_opresu_por_pagopresu_consecutivo(institucioneducativaid,consecutivo):
+    saldo = 0
+    opresu = Obligacionpresupuestal.objects.filter(institucioneducativaid=institucioneducativaid,consecutivo=consecutivo).first()
+    if opresu:
+        saldo = saldo_opresu_por_pagopresu(opresu.id)
+    
+    return saldo
+
+@api_view(['GET'])
+def saldo_opresu_por_pagopresu_api_view(request):  
+    parametros = dict(request.query_params)
+    if request.method =='GET':
+        codigoinstitucioneducativa = ""
+        institucioneducativa_parametros = ""
+        consecutivo = 0
+
+        if 'consecutivo' in parametros.keys():
+            consecutivo = parametros["consecutivo"][0]
+
+        if 'codigoinstitucioneducativa' in parametros.keys():
+            codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
+            codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
+            
+            institucioneducativa_parametros = Institucioneducativa.objects.filter(codigo =codigoinstitucioneducativa).first()
+            if institucioneducativa_parametros:   
+                
+                return Response(saldo_opresu_por_pagopresu_consecutivo(institucioneducativa_parametros.id,consecutivo),status = status.HTTP_200_OK)
+            else:
+                return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('institucion educativa no existe',status = status.HTTP_400_BAD_REQUEST)
