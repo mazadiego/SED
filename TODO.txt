@@ -205,3 +205,6 @@ PagoPresupuestal
 
 API obligacion presupuestal saldo por pagos presupuestal
 http://127.0.0.1:8000/obligacionpresupuestal/consecutivo/saldo/?codigoinstitucioneducativa=02&consecutivo=4
+
+instalar swaguer
+pip install -U drf-yasg

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_yasg',
     'apps.usuario.apps.UsuarioConfig',
     'apps.institucioneducativa.apps.InstitucioneducativaConfig',
     'apps.tiporecaudo.apps.TiporecaudoConfig',
