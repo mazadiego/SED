@@ -208,3 +208,33 @@ http://127.0.0.1:8000/obligacionpresupuestal/consecutivo/saldo/?codigoinstitucio
 
 instalar swaguer
 pip install -U drf-yasg
+
+ModificacionProyeccionPresupuestalcabecera
+{  
+        "institucioneducativaid": {
+			"codigo": "02"
+		},
+		"periodoid": {
+			"codigo": 2021
+		},
+		"observacion":"prueba"
+    }
+	
+	ModificacionProyeccionPresupuestalDetalle
+	{
+	"modificacionproyeccionpresupuestalid":
+		{
+			"codigoperiodo": "2021", 
+			"codigoinstitucioneducativa": "02"
+		},
+	"fuenterecursoid":
+		{
+			"codigo":"0102"
+		},
+	"rubropresupuestalid":
+		{
+			"codigo":"0101"
+		},
+	"valor":"15000"
+	}
+	

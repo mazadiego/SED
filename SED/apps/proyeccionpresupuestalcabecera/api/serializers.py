@@ -10,7 +10,7 @@ class ProyeccionpresupuestalcabeceraSerializers(serializers.ModelSerializer):
     
     class Meta:
         model = Proyeccionpresupuestalcabecera
-        fields = ['id','periodoid', 'institucioneducativaid','observacion','proyeccionpresupuestaldetalle']
+        fields = ['id','periodoid', 'institucioneducativaid','observacion','objeto','estado','proyeccionpresupuestaldetalle']
 
 
     def validate_periodoid(selft,value):
