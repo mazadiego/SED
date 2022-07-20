@@ -22,6 +22,9 @@ def proyeccionpresupuestalcabecera_api_view(request):
     
     elif request.method =='POST':
         data = request.data  
+        if 'estado' in data.keys():
+            data['estado'] = 'Por Aprobar'
+
         if 'institucioneducativaid' in data.keys():
             institucioneducativaid = data.pop('institucioneducativaid')
             if 'codigo' in institucioneducativaid.keys():
@@ -58,31 +61,51 @@ def proyeccionpresupuestalcabecera_api_view(request):
     elif request.method =='DELETE': 
         proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
         if proyeccionpresupuestalcabecera:
-            try:
-                proyeccionpresupuestalcabecera.delete()
-                return Response('Eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('proyeccion presupuestal no puede ser eliminar',status = status.HTTP_400_BAD_REQUEST)
+            if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                try:
+                    proyeccionpresupuestalcabecera.delete()
+                    return Response('Eliminado Correctamente',status = status.HTTP_200_OK)
+                except RestrictedError:
+                    return Response('proyeccion presupuestal no puede ser eliminar',status = status.HTTP_400_BAD_REQUEST)
+            return Response('proyeccion presupuestal no se puede ser eliminar en este Estado',status = status.HTTP_400_BAD_REQUEST)
         return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
     elif request.method =='PUT': 
         data = request.data 
         proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
         if proyeccionpresupuestalcabecera:
-            proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)  
-            proyeccionpresupuestalcabecera_dict = dict(proyeccionpresupuestalcabecera_serializers.data)           
-            if 'periodoid' in data.keys():                   
-                periodoid = proyeccionpresupuestalcabecera_dict['periodoid']
-                request.data['periodoid'] = periodoid['id'] 
-                if 'institucioneducativaid' in data.keys():
-                    institucioneducativaid = proyeccionpresupuestalcabecera_dict['institucioneducativaid']
-                    request.data['institucioneducativaid'] = institucioneducativaid['id']
-                    proyeccionpresupuestalcabecera_PUT = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera, data = request.data)
-                    if proyeccionpresupuestalcabecera_PUT.is_valid():
-                        proyeccionpresupuestalcabecera_PUT.save()
-                        return Response(proyeccionpresupuestalcabecera_PUT.data,status = status.HTTP_201_CREATED)    
-                    return Response(proyeccionpresupuestalcabecera_PUT.errors, status = status.HTTP_400_BAD_REQUEST)    
-                return Response('falta el nodo institucioneducativaid',status = status.HTTP_400_BAD_REQUEST)    
-            return Response('falta el nodo periodoid',status = status.HTTP_400_BAD_REQUEST)     
+            if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)  
+                proyeccionpresupuestalcabecera_dict = dict(proyeccionpresupuestalcabecera_serializers.data)           
+                if 'periodoid' in data.keys():                   
+                    periodoid = proyeccionpresupuestalcabecera_dict['periodoid']
+                    request.data['periodoid'] = periodoid['id'] 
+                    if 'institucioneducativaid' in data.keys():
+                        institucioneducativaid = proyeccionpresupuestalcabecera_dict['institucioneducativaid']
+                        request.data['institucioneducativaid'] = institucioneducativaid['id']
+                        proyeccionpresupuestalcabecera_PUT = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera, data = request.data)
+                        if proyeccionpresupuestalcabecera_PUT.is_valid():
+                            proyeccionpresupuestalcabecera_PUT.save()
+                            return Response(proyeccionpresupuestalcabecera_PUT.data,status = status.HTTP_201_CREATED)    
+                        return Response(proyeccionpresupuestalcabecera_PUT.errors, status = status.HTTP_400_BAD_REQUEST)    
+                    return Response('falta el nodo institucioneducativaid',status = status.HTTP_400_BAD_REQUEST)    
+                return Response('falta el nodo periodoid',status = status.HTTP_400_BAD_REQUEST)
+            return Response('proyeccion presupuestal no se puede ser modificar en este Estado',status = status.HTTP_400_BAD_REQUEST)     
+        return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
+@api_view(['GET','PUT'])
+def proyeccionpresupuestal_Aprobar_api_view(request): 
+    if request.method =='GET': 
+        proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)        
+        proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)
+        return Response(proyeccionpresupuestalcabecera_serializers.data,status = status.HTTP_200_OK)
+    if request.method =='PUT': 
+        proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
+        if proyeccionpresupuestalcabecera:
+            if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                proyeccionpresupuestalcabecera.estado ='Aprobado' 
+                proyeccionpresupuestalcabecera.save()
+                proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)                  
+                return Response(proyeccionpresupuestalcabecera_serializers.data,status = status.HTTP_200_OK)                 
+            return Response('proyeccion presupuestal no se puede ser aprobar en este Estado',status = status.HTTP_400_BAD_REQUEST)     
         return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
 
 def buscarproyeccionpresupuestalcabecera(request):

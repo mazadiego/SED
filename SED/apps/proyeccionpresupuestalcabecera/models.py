@@ -9,7 +9,7 @@ class Proyeccionpresupuestalcabecera(models.Model):
     institucioneducativaid = models.ForeignKey(Institucioneducativa, on_delete=models.RESTRICT)
     observacion = models.CharField(max_length=5000,blank=True)
     objeto = models.CharField(max_length=5000,null=False,default='')
-    estado = models.CharField(max_length=50, null=False,default='Procesado')
+    estado = models.CharField(max_length=50, null=False,default='Por Aprobar')
     
 
     class Meta:

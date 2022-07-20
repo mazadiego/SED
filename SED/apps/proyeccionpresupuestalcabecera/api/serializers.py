@@ -17,7 +17,7 @@ class ProyeccionpresupuestalcabeceraSerializers(serializers.ModelSerializer):
         periodo = Periodo.objects.filter(activo = True).first()
 
         if periodo:
-            if value != periodo.id:
+            if value.id != periodo.id:
                 raise serializers.ValidationError("la fecha no corresponde al periodo actual")
         else:
             raise serializers.ValidationError("No Exite un periodo abierto")

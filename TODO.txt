@@ -237,4 +237,8 @@ ModificacionProyeccionPresupuestalcabecera
 		},
 	"valor":"15000"
 	}
+
+metodo aprobar proyeccion 
+http://127.0.0.1:8000/proyeccionpresupuestalcabecera/aprobar/?codigoperiodo=2021&codigoinstitucioneducativa=03
+GET - aprobar PUT sin enviar nada 
 	
