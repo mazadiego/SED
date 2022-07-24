@@ -28,64 +28,135 @@ def proyeccionpresupuestaldetalle_api_view(request):
             if 'codigoperiodo' in proyeccionpresupuestalid.keys() and 'codigoinstitucioneducativa' in proyeccionpresupuestalid.keys():
                 proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera_dict(proyeccionpresupuestalid)
                 if proyeccionpresupuestalcabecera:
-                    
-                    proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)
-                    proyeccionpresupuestalid = dict(proyeccionpresupuestalcabecera_serializers.data)
-                    data.update({"proyeccionpresupuestalid" : proyeccionpresupuestalid['id']})
+                    if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                        proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)
+                        proyeccionpresupuestalid = dict(proyeccionpresupuestalcabecera_serializers.data)
+                        data.update({"proyeccionpresupuestalid" : proyeccionpresupuestalid['id']})
 
-                    if 'fuenterecursoid' in data.keys():
-                        fuenterecursoid = data.pop('fuenterecursoid')
-                        fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
-                        if fuenterecurso:
-                            fuenterecurso_serializers =Fuenterecursoserializers(fuenterecurso)
-                            fuenterecursoid = dict(fuenterecurso_serializers.data)
-                            data.update({"fuenterecursoid":fuenterecursoid['id']})
+                        if 'fuenterecursoid' in data.keys():
+                            fuenterecursoid = data.pop('fuenterecursoid')
+                            fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
+                            if fuenterecurso:
+                                fuenterecurso_serializers =Fuenterecursoserializers(fuenterecurso)
+                                fuenterecursoid = dict(fuenterecurso_serializers.data)
+                                data.update({"fuenterecursoid":fuenterecursoid['id']})
 
-                            if 'rubropresupuestalid' in data.keys():
-                                rubropresupuestalid = data.pop('rubropresupuestalid')
-                                rubropresupuestal = buscarrubropresupuestal_final(rubropresupuestalid)
-                                if rubropresupuestal:
-                                    rubropresupuestal_serializers = Rubropresupuestalserializers(rubropresupuestal)
-                                    rubropresupuestalid = dict(rubropresupuestal_serializers.data)
-                                    data.update({"rubropresupuestalid":rubropresupuestalid['id']})
-                                    
-                                    proyeccionpresupuestaldetalle_Serializers = ProyeccionpresupuestaldetalleSerializers(data = data)
-                                    
-                                    if proyeccionpresupuestaldetalle_Serializers.is_valid():
-                                        try:
-                                            proyeccionpresupuestaldetalle_Serializers.save()
-                                            return Response(proyeccionpresupuestaldetalle_Serializers.data,status = status.HTTP_201_CREATED)
-                                        except IntegrityError:
-                                            return Response('para el rubro y presupuesto seleccionado ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
-                                    return Response(proyeccionpresupuestaldetalle_Serializers.errors, status = status.HTTP_400_BAD_REQUEST)
-                                return Response('rubro presupuestal no es de detalle',status = status.HTTP_400_BAD_REQUEST)
-                            return Response('falta el nodo rubropresupuestalid para buscar rubro presupuestal',status = status.HTTP_400_BAD_REQUEST)
-                        return Response('fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
-                    return Response('falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)
+                                if 'rubropresupuestalid' in data.keys():
+                                    rubropresupuestalid = data.pop('rubropresupuestalid')
+                                    rubropresupuestal = buscarrubropresupuestal_final(rubropresupuestalid)
+                                    if rubropresupuestal:
+                                        rubropresupuestal_serializers = Rubropresupuestalserializers(rubropresupuestal)
+                                        rubropresupuestalid = dict(rubropresupuestal_serializers.data)
+                                        data.update({"rubropresupuestalid":rubropresupuestalid['id']})
+                                        
+                                        proyeccionpresupuestaldetalle_Serializers = ProyeccionpresupuestaldetalleSerializers(data = data)
+                                        
+                                        if proyeccionpresupuestaldetalle_Serializers.is_valid():
+                                            try:
+                                                proyeccionpresupuestaldetalle_Serializers.save()
+                                                return Response(proyeccionpresupuestaldetalle_Serializers.data,status = status.HTTP_201_CREATED)
+                                            except IntegrityError:
+                                                return Response('para el rubro y presupuesto seleccionado ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
+                                        return Response(proyeccionpresupuestaldetalle_Serializers.errors, status = status.HTTP_400_BAD_REQUEST)
+                                    return Response('rubro presupuestal no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                                return Response('falta el nodo rubropresupuestalid para buscar rubro presupuestal',status = status.HTTP_400_BAD_REQUEST)
+                            return Response('fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                        return Response('falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)
+                    return Response('proyeccion presupuestal no se puede ser modificar en este Estado',status = status.HTTP_400_BAD_REQUEST)     
                 return Response("proyeccion presupuestal no existe para el periodo seleccionado", status = status.HTTP_400_BAD_REQUEST)    
             return Response('faltan el nodo codigoperiodo/codigoinstitucioneducativa para buscar la cabecera',status = status.HTTP_400_BAD_REQUEST)
         return Response('falta el nodo proyeccionpresupuestalid para buscar la cabecera',status = status.HTTP_400_BAD_REQUEST)
     else:
         proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
+        
         if proyeccionpresupuestalcabecera:     
             proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)  
             proyeccionpresupuestalcabecera_dict = dict(proyeccionpresupuestalcabecera_serializers.data)
             institucioneducativa = proyeccionpresupuestalcabecera_dict['institucioneducativaid']
             proyeccionpresupuestaldetalle = buscarproyeccionpresupuestalcabeceradetalle(request,proyeccionpresupuestalcabecera_serializers.data['id'])
+            
             if proyeccionpresupuestaldetalle:
-                proyeccionpresupuestaldetalle_serializers = ProyeccionpresupuestaldetalleSerializers(proyeccionpresupuestaldetalle)
+                if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                    proyeccionpresupuestaldetalle_serializers = ProyeccionpresupuestaldetalleSerializers(proyeccionpresupuestaldetalle)
+                    if request.method =='GET':                
+                        return Response(proyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
+                    elif request.method =='DELETE':
+                        proyeccionpresupuestaldetalle_dict = dict(proyeccionpresupuestaldetalle_serializers.data)
+                        fuenterecurso = proyeccionpresupuestaldetalle_dict['fuenterecursoid']   
+                        rubropresupuestal = proyeccionpresupuestaldetalle_dict['rubropresupuestalid']     
+                        if buscarfuenterecursoingresopresupuestal(fuenterecurso['id'],institucioneducativa['id'])==False:
+                            if buscarrubro_solicitud(institucioneducativa['id'],rubropresupuestal['id'])==False:
+                                proyeccionpresupuestaldetalle.delete()
+                                return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                            return Response("Rubro no puede ser eliminado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
+                        return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
+                return Response('proyeccion presupuestal no se puede ser eliminar en este Estado',status = status.HTTP_400_BAD_REQUEST)            
+            return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)
+        return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
+
+@api_view(['GET','POST','DELETE'])
+def proyeccionpresupuestaldetalle_all_api_view(request):
+    if request.method =='POST':
+        registros=[]
+        for data in request.data:             
+            linea = request.data.index(data) + 1 
+            if 'proyeccionpresupuestalid' in data.keys():
+                proyeccionpresupuestalid = data.pop('proyeccionpresupuestalid')
+                if 'codigoperiodo' in proyeccionpresupuestalid.keys() and 'codigoinstitucioneducativa' in proyeccionpresupuestalid.keys():
+                    proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera_dict(proyeccionpresupuestalid)
+                    if proyeccionpresupuestalcabecera:
+                        if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                            proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)
+                            proyeccionpresupuestalid = dict(proyeccionpresupuestalcabecera_serializers.data)
+                            data.update({"proyeccionpresupuestalid" : proyeccionpresupuestalid['id']})
+                            if 'fuenterecursoid' in data.keys():
+                                fuenterecursoid = data.pop('fuenterecursoid')
+                                fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
+                                if fuenterecurso:
+                                    fuenterecurso_serializers =Fuenterecursoserializers(fuenterecurso)
+                                    fuenterecursoid = dict(fuenterecurso_serializers.data)
+                                    data.update({"fuenterecursoid":fuenterecursoid['id']})
+                                    if 'rubropresupuestalid' in data.keys():
+                                        rubropresupuestalid = data.pop('rubropresupuestalid')
+                                        rubropresupuestal = buscarrubropresupuestal_final(rubropresupuestalid)
+                                        if rubropresupuestal:
+                                            rubropresupuestal_serializers = Rubropresupuestalserializers(rubropresupuestal)
+                                            rubropresupuestalid = dict(rubropresupuestal_serializers.data)
+                                            data.update({"rubropresupuestalid":rubropresupuestalid['id']})
+                                            registros.append(data)
+                                            continue
+                                        return Response('linea: ' + str(linea) + ' rubro presupuestal no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                                    return Response('linea: ' + str(linea) + ' falta el nodo rubropresupuestalid para buscar rubro presupuestal',status = status.HTTP_400_BAD_REQUEST)
+                                return Response('linea: ' + str(linea) + ' fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                            return Response('linea: ' + str(linea) + ' falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)
+                        return Response('proyeccion presupuestal no se puede ser modificar en este Estado',status = status.HTTP_400_BAD_REQUEST)     
+                    return Response('linea: ' + str(linea) + " proyeccion presupuestal no existe para el periodo seleccionado", status = status.HTTP_400_BAD_REQUEST)    
+                return Response('linea: ' + str(linea) + ' faltan el nodo codigoperiodo/codigoinstitucioneducativa para buscar la cabecera',status = status.HTTP_400_BAD_REQUEST)
+            return Response('linea: ' + str(linea) + ' falta el nodo proyeccionpresupuestalid para buscar la cabecera',status = status.HTTP_400_BAD_REQUEST)
+        
+        for data in registros:
+            proyeccionpresupuestaldetalle_Serializers = ProyeccionpresupuestaldetalleSerializers(data = data)
+            if proyeccionpresupuestaldetalle_Serializers.is_valid():
+                try:
+                    proyeccionpresupuestaldetalle_Serializers.save()
+                    continue
+                except IntegrityError:
+                    return Response('existen registrsos para el rubro y presupuesto ingresados que  ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
+            return Response(proyeccionpresupuestaldetalle_Serializers.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response("registros guardados con exito",status = status.HTTP_201_CREATED)        
+    else:
+        proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)        
+        if proyeccionpresupuestalcabecera:     
+            proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).all()
+            if proyeccionpresupuestaldetalle:
+                proyeccionpresupuestaldetalle_serializers = ProyeccionpresupuestaldetalleSerializers(proyeccionpresupuestaldetalle, many = True)
                 if request.method =='GET':                
                     return Response(proyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
                 elif request.method =='DELETE':
-                    proyeccionpresupuestaldetalle_dict = dict(proyeccionpresupuestaldetalle_serializers.data)
-                    fuenterecurso = proyeccionpresupuestaldetalle_dict['fuenterecursoid']   
-                    rubropresupuestal = proyeccionpresupuestaldetalle_dict['rubropresupuestalid']     
-                    if buscarfuenterecursoingresopresupuestal(fuenterecurso['id'],institucioneducativa['id'])==False:
-                        if buscarrubro_solicitud(institucioneducativa['id'],rubropresupuestal['id'])==False:
-                            proyeccionpresupuestaldetalle.delete()
-                            return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
-                        return Response("Rubro no puede ser eliminado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
-                    return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
+                    if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                        proyeccionpresupuestaldetalle.delete()
+                        return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                    return Response('proyeccion presupuestal no se puede ser eliminar en este Estado',status = status.HTTP_400_BAD_REQUEST)            
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)
         return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
 
