@@ -141,7 +141,7 @@ def proyeccionpresupuestaldetalle_all_api_view(request):
                     proyeccionpresupuestaldetalle_Serializers.save()
                     continue
                 except IntegrityError:
-                    return Response('existen registrsos para el rubro y presupuesto ingresados que  ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
+                    return Response('existen registros para el rubro y presupuesto ingresados que  ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
             return Response(proyeccionpresupuestaldetalle_Serializers.errors, status = status.HTTP_400_BAD_REQUEST)
         return Response("registros guardados con exito",status = status.HTTP_201_CREATED)        
     else:
