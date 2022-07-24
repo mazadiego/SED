@@ -11,6 +11,7 @@ from django.db.models.deletion import RestrictedError
 from django.db.utils import IntegrityError
 from apps.periodo.models import Periodo
 from apps.periodo.api.serializers import Periodoserializers
+from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
 
 @api_view(['GET','POST','DELETE','PUT'])
 def proyeccionpresupuestalcabecera_api_view(request):    
@@ -100,12 +101,15 @@ def proyeccionpresupuestal_Aprobar_api_view(request):
     if request.method =='PUT': 
         proyeccionpresupuestalcabecera = buscarproyeccionpresupuestalcabecera(request)
         if proyeccionpresupuestalcabecera:
-            if proyeccionpresupuestalcabecera.estado !='Aprobado':
-                proyeccionpresupuestalcabecera.estado ='Aprobado' 
-                proyeccionpresupuestalcabecera.save()
-                proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)                  
-                return Response(proyeccionpresupuestalcabecera_serializers.data,status = status.HTTP_200_OK)                 
-            return Response('proyeccion presupuestal no se puede ser aprobar en este Estado',status = status.HTTP_400_BAD_REQUEST)     
+            proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).all()
+            if proyeccionpresupuestaldetalle:
+                if proyeccionpresupuestalcabecera.estado !='Aprobado':
+                    proyeccionpresupuestalcabecera.estado ='Aprobado' 
+                    proyeccionpresupuestalcabecera.save()
+                    proyeccionpresupuestalcabecera_serializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera)                  
+                    return Response(proyeccionpresupuestalcabecera_serializers.data,status = status.HTTP_200_OK)                 
+                return Response('proyeccion presupuestal no se puede ser aprobar en este Estado',status = status.HTTP_400_BAD_REQUEST)     
+            return Response("No existe registros en el detalle para aprobar documento",status = status.HTTP_400_BAD_REQUEST)
         return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
 
 def buscarproyeccionpresupuestalcabecera(request):
