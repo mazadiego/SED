@@ -125,9 +125,9 @@ def proyeccionpresupuestaldetalle_all_api_view(request):
                                             data.update({"rubropresupuestalid":rubropresupuestalid['id']})
                                             registros.append(data)
                                             continue
-                                        return Response('linea: ' + str(linea) + ' rubro presupuestal no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                                        return Response('linea: ' + str(linea) + ' rubro presupuestal no existe o no es  es de detalle',status = status.HTTP_400_BAD_REQUEST)
                                     return Response('linea: ' + str(linea) + ' falta el nodo rubropresupuestalid para buscar rubro presupuestal',status = status.HTTP_400_BAD_REQUEST)
-                                return Response('linea: ' + str(linea) + ' fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                                return Response('linea: ' + str(linea) + ' fuente recurso no existe o no es de detalle',status = status.HTTP_400_BAD_REQUEST)
                             return Response('linea: ' + str(linea) + ' falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)
                         return Response('proyeccion presupuestal no se puede ser modificar en este Estado',status = status.HTTP_400_BAD_REQUEST)     
                     return Response('linea: ' + str(linea) + " proyeccion presupuestal no existe para el periodo seleccionado", status = status.HTTP_400_BAD_REQUEST)    
