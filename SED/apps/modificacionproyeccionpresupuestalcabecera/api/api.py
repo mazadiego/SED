@@ -22,6 +22,8 @@ def modificacionproyeccionpresupuestalcabecera_api_view(request):
     
     elif request.method =='POST':
         
+        if 'estado' in request.data.keys():
+            data['estado'] = 'Procesado'
 
         if 'institucioneducativaid' in request.data.keys():
             institucioneducativaid = request.data.pop('institucioneducativaid')
