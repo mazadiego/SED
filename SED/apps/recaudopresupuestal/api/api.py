@@ -34,6 +34,9 @@ def recaudopresupuestal_api_view(request):
         ingresopresupuestal = Ingresopresupuestal()
         consecutivoingreso = 0 
         consecutivo = 0
+        if 'estado' in request.data.keys():
+            request.data['estado'] = 'Procesado'
+
         if 'institucioneducativaid' in request.data.keys():
             institucioneducativaid = request.data.pop('institucioneducativaid')
             if 'codigo' in institucioneducativaid.keys():
@@ -66,9 +69,10 @@ def recaudopresupuestal_api_view(request):
                 consecutivoingreso = ingresopresupuestalid['consecutivo']
                 ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativa.id, consecutivo = consecutivoingreso).first()
                 if ingresopresupuestal:
-                    
-                    request.data.update({"ingresopresupuestalid": ingresopresupuestal.id})
-                    
+                    if ingresopresupuestal.estado =='Procesado':
+                        request.data.update({"ingresopresupuestalid": ingresopresupuestal.id})
+                    else:
+                        return Response("Documento ingreso presupuestal no se puede relacionar en estado Anulado",status = status.HTTP_400_BAD_REQUEST)           
                 else:
                     return Response("Documento ingreso presupuestal no existe",status = status.HTTP_400_BAD_REQUEST)           
             else:
@@ -102,8 +106,11 @@ def recaudopresupuestal_consecutivo_api_view(request):
         elif request.method == 'DELETE':
             if validar_recaudo_cdp(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
                 #if validar_recaudo_solicitud(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
-                recaudopresupuestal.delete()
-                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
+                if recaudopresupuestal.estado =='Procesado':
+                    recaudopresupuestal.estado ='Anulado' 
+                    recaudopresupuestal.save()
+                    return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
+                return Response('Recaudo presupuestal no puede ser anulado en este Estado',status = status.HTTP_400_BAD_REQUEST)
                 #return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
             return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)

@@ -69,7 +69,7 @@ def modificacionproyeccionpresupuestalcabecera_api_view(request):
                 modificacionproyeccionpresupuestalcabecera.delete()
                 return Response('Eliminado Correctamente',status = status.HTTP_200_OK)
             except RestrictedError:
-                return Response('proyeccion presupuestal no puede ser eliminar',status = status.HTTP_400_BAD_REQUEST)
+                return Response('modificacion presupuestal no puede ser eliminar',status = status.HTTP_400_BAD_REQUEST)
         return Response('no existe cabecera',status = status.HTTP_400_BAD_REQUEST)
     elif request.method =='PUT': 
         data = request.data 

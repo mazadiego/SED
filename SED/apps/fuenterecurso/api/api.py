@@ -18,6 +18,8 @@ from apps.ingresopresupuestal.models import Ingresopresupuestal
 from apps.institucioneducativa.models import Institucioneducativa
 from apps.institucioneducativa.api.serializers import InstitucioneducativaSerializer
 from django.db.models import Count,Sum
+from apps.modificacionproyeccionpresupuestalcabecera.models import Modificacionproyeccionpresupuestalcabecera
+from apps.modificacionproyeccionpresupuestaldetalle.models import Modificacionproyeccionpresupuestaldetalle
 
 @api_view(['GET','POST'])
 def fuenterecurso_api_view(request):
@@ -195,6 +197,10 @@ def saldofuenterecursoporingreso_api_view(request):
         codigoperiodo = 0
         periodoid = 0
         periodo = Periodo.objects.filter(activo = True).first()
+        totalproyeccion = 0
+        totalingreso = 0
+        totalmodificaciones=0
+
         if periodo:
             periodoid = periodo.id
             codigoperiodo = periodo.codigo
@@ -225,18 +231,26 @@ def saldofuenterecursoporingreso_api_view(request):
         else:
             fuenterecurso_parametros = dict({"id":0})
 
-        proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativa_parametros['id'] ).first() 
+        proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativa_parametros['id'],estado ='Aprobado' ).first() 
 
         if proyeccionpresupuestalcabecera:           
             proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecurso_parametros['id'],proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
             if proyeccionpresupuestaldetalle:
                 totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
-                ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecurso_parametros['id'], institucioneducativaid = institucioneducativa_parametros['id'], fecha__year = codigoperiodo).values('fuenterecursoid').annotate(total=Sum('valor'))
+                ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecurso_parametros['id'], institucioneducativaid = institucioneducativa_parametros['id'], fecha__year = codigoperiodo, estado ='Procesado').values('fuenterecursoid').annotate(total=Sum('valor'))
                 if ingresopresupuestal:
                     totalingreso = ingresopresupuestal[0]['total']
                 else:
                     totalingreso = 0
-                saldo = totalproyeccion - totalingreso
+
+                #se agregan las modificaciones
+                modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativa_parametros['id'] ,estado ='Procesado').first()
+                if modificacionproyeccionpresupuestalcabecera:                
+                    modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecurso_parametros['id'],modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+                    if modificacionproyeccionpresupuestaldetalle:
+                        totalmodificaciones = modificacionproyeccionpresupuestaldetalle[0]['total']
+
+                saldo = (totalproyeccion + totalmodificaciones) - totalingreso 
                 return Response(saldo,status = status.HTTP_200_OK)
             return Response('no existen datos',status = status.HTTP_400_BAD_REQUEST)
         return Response('no existen datos',status = status.HTTP_400_BAD_REQUEST)  
@@ -246,22 +260,33 @@ def saldofuenterecursoporingreso(fuenterecursoid, institucioneducativaid,valorac
     codigoperiodo = 0
     periodoid = 0
     periodo = Periodo.objects.filter(activo = True).first()
+    totalproyeccion=0
+    totalingreso=0
+    totalmodificaciones=0
     if periodo:
         periodoid = periodo.id
         codigoperiodo = periodo.codigo
     
-    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ).first() 
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ,estado ='Aprobado').first() 
 
     if proyeccionpresupuestalcabecera:           
         proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecursoid,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
         if proyeccionpresupuestaldetalle:
             totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
-            ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecursoid, institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo).values('fuenterecursoid').annotate(total=Sum('valor'))
+            ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecursoid, institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo, estado ='Procesado').values('fuenterecursoid').annotate(total=Sum('valor'))
             if ingresopresupuestal:
                 totalingreso = ingresopresupuestal[0]['total']
             else:
                 totalingreso = 0
-            saldo = totalproyeccion - (totalingreso + valoractual)
+
+            #se agregan las modificaciones
+            modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ,estado ='Procesado').first()
+            if modificacionproyeccionpresupuestalcabecera:                
+                modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecursoid,modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+                if modificacionproyeccionpresupuestaldetalle:
+                    totalmodificaciones = modificacionproyeccionpresupuestaldetalle[0]['total']
+
+            saldo = (totalproyeccion + totalmodificaciones) - (totalingreso + valoractual)
             
     if saldo >= 0:
         return True

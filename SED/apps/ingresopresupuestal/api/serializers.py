@@ -12,7 +12,7 @@ class Ingresopresupuestalserializers(serializers.ModelSerializer):
 
     class Meta:
         model = Ingresopresupuestal
-        fields = ['id','institucioneducativaid','consecutivo','fecha','terceroid','fuenterecursoid','observacion','valor','fechaproyeccionrecaudo']
+        fields = ['id','institucioneducativaid','consecutivo','fecha','terceroid','fuenterecursoid','observacion','valor','fechaproyeccionrecaudo','objeto','estado']
 
     
     def validate_valor(self, value):

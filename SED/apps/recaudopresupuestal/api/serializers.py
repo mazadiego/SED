@@ -11,7 +11,7 @@ class Recaudopresupuestalserializers(serializers.ModelSerializer):
 
     class Meta:
         model = Recaudopresupuestal
-        fields = ['id','institucioneducativaid','consecutivo','fecha','ingresopresupuestalid','tiporecaudoid','documentorecaudo','observacion','valor']
+        fields = ['id','institucioneducativaid','consecutivo','fecha','ingresopresupuestalid','tiporecaudoid','documentorecaudo','observacion','valor','objeto','estado']
         
     
     def validate_valor(self, value):

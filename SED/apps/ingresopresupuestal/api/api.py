@@ -33,6 +33,9 @@ def ingresopresupuestal_api_view(request):
     
     elif request.method =='POST':
         data = request.data  
+
+        if 'estado' in data.keys():
+            data['estado'] = 'Procesado'
         
         if 'institucioneducativaid' in data.keys():
             institucioneducativaid = data.pop('institucioneducativaid')
@@ -91,12 +94,15 @@ def ingresopresupuestal_consecutivo_api_view(request):
         if request.method =='GET': 
             ingresopresupuestal_serializers = Ingresopresupuestalserializers(ingresopresupuestal)
             return Response(ingresopresupuestal_serializers.data,status = status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            try:
-                ingresopresupuestal.delete()
-                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('Ingreso presupuestal no puede ser eliminado esta asociado a un documento de recaudo',status = status.HTTP_400_BAD_REQUEST)            
+        elif request.method == 'DELETE':    
+                  
+            if Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').count()==0:
+                if ingresopresupuestal.estado =='Procesado':
+                    ingresopresupuestal.estado ='Anulado' 
+                    ingresopresupuestal.save()
+                    return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
+                return Response('Ingreso presupuestal no puede ser anulado en este Estado',status = status.HTTP_400_BAD_REQUEST) 
+            return Response('Ingreso presupuestal no puede ser Anulado esta asociado a un documento de recaudo',status = status.HTTP_400_BAD_REQUEST)            
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -186,10 +192,10 @@ def saldoingresoporrecaudo(institucioneducativaid,consecutivo):
     saldo = 0
     totalrecaudo = 0
     ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, consecutivo = consecutivo).first()
-
+ 
     if ingresopresupuestal:
         totalingreso = ingresopresupuestal.valor
-        recaudopresupuestal = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id).values('ingresopresupuestalid').annotate(total=Sum('valor'))
+        recaudopresupuestal = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').values('ingresopresupuestalid').annotate(total=Sum('valor'))
         if recaudopresupuestal :
             totalrecaudo = recaudopresupuestal[0]['total']
 
