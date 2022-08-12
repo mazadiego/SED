@@ -96,7 +96,7 @@ def recaudopresupuestal_api_view(request):
         else:
             return Response("el valor del recaudo supera el saldo por recaudo del documento de ingreso presupuestal relacionado",status = status.HTTP_400_BAD_REQUEST) 
           
-@api_view(['GET','DELETE'])
+@api_view(['GET','DELETE','PUT'])
 def recaudopresupuestal_consecutivo_api_view(request): 
     recaudopresupuestal = buscarrecaudopresupuestalconsecutivo(request) 
     if recaudopresupuestal:
@@ -104,15 +104,79 @@ def recaudopresupuestal_consecutivo_api_view(request):
             recaudopresupuestal_serializers = Recaudopresupuestalserializers(recaudopresupuestal)
             return Response(recaudopresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            if validar_recaudo_cdp(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
-                #if validar_recaudo_solicitud(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
+            #if validar_recaudo_cdp(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
+            if validar_recaudo_solicitud(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
                 if recaudopresupuestal.estado =='Procesado':
                     recaudopresupuestal.estado ='Anulado' 
                     recaudopresupuestal.save()
                     return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
                 return Response('Recaudo presupuestal no puede ser anulado en este Estado',status = status.HTTP_400_BAD_REQUEST)
-                #return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
-            return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
+            return Response("Recaudo no puede ser eliminado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
+            #return Response("Recaudo no puede ser eliminado, fuente asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'PUT':
+            consecutivoingreso = 0 
+            if validar_recaudo_solicitud(recaudopresupuestal.institucioneducativaid,recaudopresupuestal.ingresopresupuestalid.fuenterecursoid.id)==False:
+                if recaudopresupuestal.estado =='Procesado':
+                    if 'institucioneducativaid' in request.data.keys():
+                        request.data['institucioneducativaid'] = recaudopresupuestal.institucioneducativaid.id
+                    else:
+                        return Response("falta el nodo institucioneducativaid",status = status.HTTP_400_BAD_REQUEST) 
+
+                    if 'consecutivo' in request.data.keys():
+                        request.data['consecutivo'] = recaudopresupuestal.consecutivo
+                    else:
+                        return Response("falta el nodo consecutivo",status = status.HTTP_400_BAD_REQUEST)
+
+                    if 'fecha' in request.data.keys():
+                        request.data['fecha'] = recaudopresupuestal.fecha
+                    else:
+                        return Response("falta el nodo fecha",status = status.HTTP_400_BAD_REQUEST)
+                    
+                    if 'estado' in request.data.keys():
+                        request.data['estado'] = recaudopresupuestal.estado 
+
+                    if 'tiporecaudoid' in request.data.keys():
+                        tiporecaudoid = request.data.pop('tiporecaudoid')
+                        if 'codigo' in tiporecaudoid.keys():
+                            tiporecaudo = Tiporecaudo.objects.filter(codigo = tiporecaudoid['codigo']).first()
+                            if tiporecaudo:
+                                request.data.update({"tiporecaudoid": tiporecaudo.id})
+                            else:
+                                return Response("tiporecaudo no existe",status = status.HTTP_400_BAD_REQUEST)            
+                        else:
+                            return Response("falta el nodo codigo para consultar tipo recaudo",status = status.HTTP_400_BAD_REQUEST)       
+                    else:
+                        return Response("falta el nodo tiporecaudoid",status = status.HTTP_400_BAD_REQUEST) 
+
+                    if 'ingresopresupuestalid' in request.data.keys():
+                        ingresopresupuestalid = request.data.pop('ingresopresupuestalid')
+                        if 'consecutivo' in ingresopresupuestalid.keys():                
+                            consecutivoingreso = ingresopresupuestalid['consecutivo']
+                            ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = recaudopresupuestal.institucioneducativaid.id, consecutivo = consecutivoingreso).first()
+                            if ingresopresupuestal:
+                                if ingresopresupuestal.estado =='Procesado':
+                                    request.data.update({"ingresopresupuestalid": ingresopresupuestal.id})
+                                else:
+                                    return Response("Documento ingreso presupuestal no se puede relacionar en estado Anulado",status = status.HTTP_400_BAD_REQUEST)           
+                            else:
+                                return Response("Documento ingreso presupuestal no existe",status = status.HTTP_400_BAD_REQUEST)           
+                        else:
+                            return Response("falta el nodo consecutivo para consultar el ingreso presupuestal",status = status.HTTP_400_BAD_REQUEST)       
+                    else:
+                        return Response("falta el nodo ingresopresupuestalid",status = status.HTTP_400_BAD_REQUEST)
+                        
+                    if validarsaldoingresoporrecaudo(recaudopresupuestal.institucioneducativaid.id,consecutivoingreso,request.data['valor'])==True:
+                        recaudopresupuestal_serializers =  Recaudopresupuestalserializers(recaudopresupuestal,data = request.data)
+                        if recaudopresupuestal_serializers.is_valid():                            
+                            recaudopresupuestal_serializers.save()
+                            return Response(recaudopresupuestal_serializers.data,status = status.HTTP_201_CREATED)                            
+                        return Response(recaudopresupuestal_serializers.errors,status = status.HTTP_400_BAD_REQUEST)  
+                    else:
+                        return Response("el valor del recaudo supera el saldo por recaudo del documento de ingreso presupuestal relacionado",status = status.HTTP_400_BAD_REQUEST) 
+          
+
+                return Response('Recaudo presupuestal no puede ser actualizado en este Estado',status = status.HTTP_400_BAD_REQUEST)
+            return Response("Recaudo no puede ser Actualizado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)
     
 def buscarrecaudopresupuestalconsecutivo(request):

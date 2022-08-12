@@ -87,7 +87,7 @@ def ingresopresupuestal_api_view(request):
             return Response('falta el nodo codigo para tipo institucion educativa',status = status.HTTP_400_BAD_REQUEST) 
         return Response('falta el nodo institucioneducativaid',status = status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET','DELETE'])
+@api_view(['GET','DELETE','PUT'])
 def ingresopresupuestal_consecutivo_api_view(request): 
     ingresopresupuestal = buscaringresopresupuestalconsecutivo(request) 
     if ingresopresupuestal:
@@ -102,7 +102,64 @@ def ingresopresupuestal_consecutivo_api_view(request):
                     ingresopresupuestal.save()
                     return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
                 return Response('Ingreso presupuestal no puede ser anulado en este Estado',status = status.HTTP_400_BAD_REQUEST) 
-            return Response('Ingreso presupuestal no puede ser Anulado esta asociado a un documento de recaudo',status = status.HTTP_400_BAD_REQUEST)            
+            return Response('Ingreso presupuestal no puede ser Anulado esta asociado a un documento de recaudo',status = status.HTTP_400_BAD_REQUEST)  
+        elif request.method == 'PUT':
+            if Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').count()==0:
+                if ingresopresupuestal.estado =='Procesado':
+
+                    if 'institucioneducativaid' in request.data.keys():
+                        request.data['institucioneducativaid'] = ingresopresupuestal.institucioneducativaid.id
+                    else:
+                        return Response("falta el nodo institucioneducativaid",status = status.HTTP_400_BAD_REQUEST) 
+
+                    if 'consecutivo' in request.data.keys():
+                        request.data['consecutivo'] = ingresopresupuestal.consecutivo
+                    else:
+                        return Response("falta el nodo consecutivo",status = status.HTTP_400_BAD_REQUEST)
+
+                    if 'fecha' in request.data.keys():
+                        request.data['fecha'] = ingresopresupuestal.fecha
+                    else:
+                        return Response("falta el nodo fecha",status = status.HTTP_400_BAD_REQUEST)
+                    
+                    if 'estado' in request.data.keys():
+                        request.data['estado'] = ingresopresupuestal.estado 
+
+                    if 'terceroid' in request.data.keys():
+                        terceroid = request.data.pop('terceroid')
+                        if 'codigo' in terceroid.keys(): 
+                            tercero = Tercero.objects.filter(codigo = terceroid['codigo']).first()
+                            if tercero:
+                                request.data.update({"terceroid" : tercero.id})
+                            else:
+                                return Response('tercero no existe',status = status.HTTP_400_BAD_REQUEST) 
+                        else:
+                            return Response('falta el nodo codigo para el tercero',status = status.HTTP_400_BAD_REQUEST) 
+                    else:
+                        return Response('falta el nodo terceroid',status = status.HTTP_400_BAD_REQUEST) 
+
+                    if 'fuenterecursoid' in request.data.keys():
+                        fuenterecursoid = request.data.pop('fuenterecursoid')
+                        fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
+                        if fuenterecurso:                            
+                            if buscarfuenterecursoproyeccion(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id)==True:
+                                if saldofuenterecursoporingreso(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id,request.data['valor'])==True:
+                                    request.data.update({"fuenterecursoid" : fuenterecurso.id})
+                                else:
+                                    return Response('fuente recurso supera el valor de la proyeccion presupuestal asignada para el periodo',status = status.HTTP_400_BAD_REQUEST)
+                            else:
+                                return Response('fuente recurso no tiene proyeccion presupuestal asignada o el periodo esta cerrado',status = status.HTTP_400_BAD_REQUEST)
+                        else:
+                            return Response('fuente recurso no es de detalle',status = status.HTTP_400_BAD_REQUEST)
+                    else:
+                        return Response('falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)
+                    ingresopresupuestal_serializers = Ingresopresupuestalserializers(ingresopresupuestal,data = request.data)
+                    if ingresopresupuestal_serializers.is_valid():
+                        ingresopresupuestal_serializers.save()
+                        return Response(ingresopresupuestal_serializers.data,status = status.HTTP_200_OK)
+                    return Response(ingresopresupuestal_serializers.errors, status = status.HTTP_400_BAD_REQUEST)
+                return Response('Ingreso presupuestal no se puede actualizar en este Estado',status = status.HTTP_400_BAD_REQUEST) 
+            return Response('Ingreso presupuestal no puede ser Actualizar esta asociado a un documento de recaudo',status = status.HTTP_400_BAD_REQUEST)          
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
