@@ -165,15 +165,19 @@ def recaudopresupuestal_consecutivo_api_view(request):
                     else:
                         return Response("falta el nodo ingresopresupuestalid",status = status.HTTP_400_BAD_REQUEST)
                         
-                    if validarsaldoingresoporrecaudo(recaudopresupuestal.institucioneducativaid.id,consecutivoingreso,request.data['valor'])==True:
-                        recaudopresupuestal_serializers =  Recaudopresupuestalserializers(recaudopresupuestal,data = request.data)
-                        if recaudopresupuestal_serializers.is_valid():                            
+                    recaudopresupuestal_serializers =  Recaudopresupuestalserializers(recaudopresupuestal,data = request.data)
+                    if recaudopresupuestal_serializers.is_valid(): 
+                        if recaudopresupuestal.ingresopresupuestalid.consecutivo != consecutivoingreso or recaudopresupuestal.valor != request.data['valor']:
+                            if validarsaldoingresoporrecaudo(recaudopresupuestal.institucioneducativaid.id,consecutivoingreso,request.data['valor'])==True:                            
+                                recaudopresupuestal_serializers.save()
+                                return Response(recaudopresupuestal_serializers.data,status = status.HTTP_201_CREATED)                                                            
+                            else:
+                                return Response("el valor del recaudo supera el saldo por recaudo del documento de ingreso presupuestal relacionado",status = status.HTTP_400_BAD_REQUEST) 
+                        else:                                                
                             recaudopresupuestal_serializers.save()
                             return Response(recaudopresupuestal_serializers.data,status = status.HTTP_201_CREATED)                            
-                        return Response(recaudopresupuestal_serializers.errors,status = status.HTTP_400_BAD_REQUEST)  
-                    else:
-                        return Response("el valor del recaudo supera el saldo por recaudo del documento de ingreso presupuestal relacionado",status = status.HTTP_400_BAD_REQUEST) 
-          
+                    return Response(recaudopresupuestal_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
+
 
                 return Response('Recaudo presupuestal no puede ser actualizado en este Estado',status = status.HTTP_400_BAD_REQUEST)
             return Response("Recaudo no puede ser Actualizado, rubro asociado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)

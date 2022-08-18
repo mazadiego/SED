@@ -143,10 +143,13 @@ def ingresopresupuestal_consecutivo_api_view(request):
                         fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
                         if fuenterecurso:                            
                             if buscarfuenterecursoproyeccion(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id)==True:
-                                if saldofuenterecursoporingreso(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id,request.data['valor'])==True:
-                                    request.data.update({"fuenterecursoid" : fuenterecurso.id})
+                                if ingresopresupuestal.valor != request.data['valor'] or ingresopresupuestal.fuenterecursoid.id != fuenterecurso.id:
+                                    if saldofuenterecursoporingreso(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id,request.data['valor'])==True:
+                                        request.data.update({"fuenterecursoid" : fuenterecurso.id})
+                                    else:
+                                        return Response('fuente recurso supera el valor de la proyeccion presupuestal asignada para el periodo',status = status.HTTP_400_BAD_REQUEST)
                                 else:
-                                    return Response('fuente recurso supera el valor de la proyeccion presupuestal asignada para el periodo',status = status.HTTP_400_BAD_REQUEST)
+                                    request.data.update({"fuenterecursoid" : fuenterecurso.id})
                             else:
                                 return Response('fuente recurso no tiene proyeccion presupuestal asignada o el periodo esta cerrado',status = status.HTTP_400_BAD_REQUEST)
                         else:
