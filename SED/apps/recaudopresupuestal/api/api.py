@@ -15,7 +15,7 @@ from apps.tiporecaudo.models import Tiporecaudo
 from apps.ingresopresupuestal.models import Ingresopresupuestal
 from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
-from apps.ingresopresupuestal.api.api import saldoingresoporrecaudo
+from apps.ingresopresupuestal.api.api import saldoingresoporrecaudo,saldoingresoporrecaudo_mod
 from django.db.utils import IntegrityError
 from apps.proyeccionpresupuestaldetalle.models import Proyeccionpresupuestaldetalle
 from apps.rubropresupuestal.api.api import buscarrubro_solicitud,buscar_rubro_cdp
@@ -168,7 +168,7 @@ def recaudopresupuestal_consecutivo_api_view(request):
                     recaudopresupuestal_serializers =  Recaudopresupuestalserializers(recaudopresupuestal,data = request.data)
                     if recaudopresupuestal_serializers.is_valid(): 
                         if recaudopresupuestal.ingresopresupuestalid.consecutivo != consecutivoingreso or recaudopresupuestal.valor != request.data['valor']:
-                            if validarsaldoingresoporrecaudo(recaudopresupuestal.institucioneducativaid.id,consecutivoingreso,request.data['valor'])==True:                            
+                            if validarsaldoingresoporrecaudo_mod(recaudopresupuestal,consecutivoingreso,request.data['valor'])==True:                            
                                 recaudopresupuestal_serializers.save()
                                 return Response(recaudopresupuestal_serializers.data,status = status.HTTP_201_CREATED)                                                            
                             else:
@@ -246,6 +246,17 @@ def validarsaldoingresoporrecaudo(institucioneducativaid,consecutivoingreso,valo
         return True
     else:
         return False
+
+def validarsaldoingresoporrecaudo_mod(recaudopresupuestal,consecutivoingreso,valoractual):
+    saldo = 0
+    saldo = saldoingresoporrecaudo_mod (recaudopresupuestal,consecutivoingreso) - valoractual
+
+    if saldo >=0:
+        return True
+    else:
+        return False
+
+
 
 def validar_recaudo_solicitud(institucioneducativaid,fuenterecursoid):
 

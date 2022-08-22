@@ -293,3 +293,41 @@ def saldofuenterecursoporingreso(fuenterecursoid, institucioneducativaid,valorac
     else:
         return False
 
+def saldofuenterecursoporingreso_mod(ingresopresupuestal,valoractual):
+    saldo = 0
+    codigoperiodo = 0
+    periodoid = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    totalproyeccion=0
+    totalingreso=0
+    totalmodificaciones=0
+    if periodo:
+        periodoid = periodo.id
+        codigoperiodo = periodo.codigo
+    
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = ingresopresupuestal.institucioneducativaid.id ,estado ='Aprobado').first() 
+
+    if proyeccionpresupuestalcabecera:           
+        proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = ingresopresupuestal.fuenterecursoid.id,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+        if proyeccionpresupuestaldetalle:
+            totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
+            ingresopresupuestal_query = Ingresopresupuestal.objects.filter( id != ingresopresupuestal.id ,fuenterecursoid = ingresopresupuestal.fuenterecursoid.id, institucioneducativaid = ingresopresupuestal.institucioneducativaid.id, fecha__year = codigoperiodo, estado ='Procesado').values('fuenterecursoid').annotate(total=Sum('valor'))
+            if ingresopresupuestal_query:
+                totalingreso = ingresopresupuestal_query[0]['total']
+            else:
+                totalingreso = 0
+
+            #se agregan las modificaciones
+            modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = ingresopresupuestal.institucioneducativaid.id ,estado ='Procesado').first()
+            if modificacionproyeccionpresupuestalcabecera:                
+                modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = ingresopresupuestal.fuenterecursoid.id,modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+                if modificacionproyeccionpresupuestaldetalle:
+                    totalmodificaciones = modificacionproyeccionpresupuestaldetalle[0]['total']
+
+            saldo = (totalproyeccion + totalmodificaciones) - (totalingreso + valoractual)
+            
+    if saldo >= 0:
+        return True
+    else:
+        return False
+

@@ -11,7 +11,7 @@ from django.db.models.deletion import RestrictedError
 from django.db.utils import IntegrityError
 from apps.tercero.models import Tercero
 from apps.tercero.api.serializers import TerceroSerializer
-from apps.fuenterecurso.api.api import buscarfuenterecurso_final,saldofuenterecursoporingreso
+from apps.fuenterecurso.api.api import buscarfuenterecurso_final,saldofuenterecursoporingreso,saldofuenterecursoporingreso_mod
 from apps.fuenterecurso.api.serializers import Fuenterecursoserializers
 from apps.periodo.models import Periodo
 from apps.periodo.api.serializers import Periodoserializers
@@ -144,7 +144,7 @@ def ingresopresupuestal_consecutivo_api_view(request):
                         if fuenterecurso:                            
                             if buscarfuenterecursoproyeccion(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id)==True:
                                 if ingresopresupuestal.valor != request.data['valor'] or ingresopresupuestal.fuenterecursoid.id != fuenterecurso.id:
-                                    if saldofuenterecursoporingreso(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id,request.data['valor'])==True:
+                                    if saldofuenterecursoporingreso_mod(ingresopresupuestal , request.data['valor'])==True:
                                         request.data.update({"fuenterecursoid" : fuenterecurso.id})
                                     else:
                                         return Response('fuente recurso supera el valor de la proyeccion presupuestal asignada para el periodo',status = status.HTTP_400_BAD_REQUEST)
@@ -258,6 +258,22 @@ def saldoingresoporrecaudo(institucioneducativaid,consecutivo):
         recaudopresupuestal = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').values('ingresopresupuestalid').annotate(total=Sum('valor'))
         if recaudopresupuestal :
             totalrecaudo = recaudopresupuestal[0]['total']
+
+    saldo = totalingreso  - totalrecaudo
+
+    return saldo
+
+def saldoingresoporrecaudo_mod(recaudopresupuestal,consecutivo):
+    totalingreso = 0
+    saldo = 0
+    totalrecaudo = 0
+    ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = recaudopresupuestal.institucioneducativaid.id, consecutivo = consecutivo).first()
+ 
+    if ingresopresupuestal:
+        totalingreso = ingresopresupuestal.valor
+        recaudopresupuestal_query = Recaudopresupuestal.objects.filter(id != recaudopresupuestal.id , ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').values('ingresopresupuestalid').annotate(total=Sum('valor'))
+        if recaudopresupuestal_query :
+            totalrecaudo = recaudopresupuestal_query[0]['total']
 
     saldo = totalingreso  - totalrecaudo
 
