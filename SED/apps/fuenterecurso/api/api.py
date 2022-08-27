@@ -311,12 +311,13 @@ def saldofuenterecursoporingreso_mod(ingresopresupuestal,valoractual):
         proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = ingresopresupuestal.fuenterecursoid.id,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
         if proyeccionpresupuestaldetalle:
             totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
-            ingresopresupuestal_query = Ingresopresupuestal.objects.filter( id != ingresopresupuestal.id ,fuenterecursoid = ingresopresupuestal.fuenterecursoid.id, institucioneducativaid = ingresopresupuestal.institucioneducativaid.id, fecha__year = codigoperiodo, estado ='Procesado').values('fuenterecursoid').annotate(total=Sum('valor'))
+            
+            ingresopresupuestal_query = Ingresopresupuestal.objects.filter(fuenterecursoid = ingresopresupuestal.fuenterecursoid.id, institucioneducativaid = ingresopresupuestal.institucioneducativaid.id, fecha__year = codigoperiodo, estado ='Procesado').exclude(id = ingresopresupuestal.id).values('fuenterecursoid').annotate(total=Sum('valor'))
             if ingresopresupuestal_query:
                 totalingreso = ingresopresupuestal_query[0]['total']
             else:
                 totalingreso = 0
-
+            
             #se agregan las modificaciones
             modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = ingresopresupuestal.institucioneducativaid.id ,estado ='Procesado').first()
             if modificacionproyeccionpresupuestalcabecera:                

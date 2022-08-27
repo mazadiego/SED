@@ -142,8 +142,8 @@ def ingresopresupuestal_consecutivo_api_view(request):
                         fuenterecursoid = request.data.pop('fuenterecursoid')
                         fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)
                         if fuenterecurso:                            
-                            if buscarfuenterecursoproyeccion(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id)==True:
-                                if ingresopresupuestal.valor != request.data['valor'] or ingresopresupuestal.fuenterecursoid.id != fuenterecurso.id:
+                            if buscarfuenterecursoproyeccion(fuenterecurso.id,ingresopresupuestal.institucioneducativaid.id)==True:                                
+                                if ingresopresupuestal.valor != request.data['valor'] or ingresopresupuestal.fuenterecursoid.id != fuenterecurso.id:                                    
                                     if saldofuenterecursoporingreso_mod(ingresopresupuestal , request.data['valor'])==True:
                                         request.data.update({"fuenterecursoid" : fuenterecurso.id})
                                     else:
@@ -157,6 +157,7 @@ def ingresopresupuestal_consecutivo_api_view(request):
                     else:
                         return Response('falta el nodo fuenterecursoid para buscar la fuente de recurso',status = status.HTTP_400_BAD_REQUEST)
                     ingresopresupuestal_serializers = Ingresopresupuestalserializers(ingresopresupuestal,data = request.data)
+                    
                     if ingresopresupuestal_serializers.is_valid():
                         ingresopresupuestal_serializers.save()
                         return Response(ingresopresupuestal_serializers.data,status = status.HTTP_200_OK)
@@ -271,7 +272,7 @@ def saldoingresoporrecaudo_mod(recaudopresupuestal,consecutivo):
  
     if ingresopresupuestal:
         totalingreso = ingresopresupuestal.valor
-        recaudopresupuestal_query = Recaudopresupuestal.objects.filter(id != recaudopresupuestal.id , ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').values('ingresopresupuestalid').annotate(total=Sum('valor'))
+        recaudopresupuestal_query = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').exclude(id = recaudopresupuestal.id).values('ingresopresupuestalid').annotate(total=Sum('valor'))
         if recaudopresupuestal_query :
             totalrecaudo = recaudopresupuestal_query[0]['total']
 
