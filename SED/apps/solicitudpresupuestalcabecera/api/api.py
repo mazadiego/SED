@@ -17,6 +17,7 @@ from apps.institucioneducativa.api.serializers import InstitucioneducativaSerial
 from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
 from django.db.models.deletion import RestrictedError
+from apps.solicitudpresupuestaldetalle.models import Solicitudpresupuestaldetalle
 
 @api_view(['GET','POST'])
 def solicitudpresupuestalcabecera_api_view(request): 
@@ -34,6 +35,10 @@ def solicitudpresupuestalcabecera_api_view(request):
 
         
         consecutivo = 0
+
+        if 'estado' in request.data.keys():
+            request.data['estado'] = 'Procesado'
+
         if 'institucioneducativaid' in request.data.keys():
             institucioneducativaid = request.data.pop('institucioneducativaid')
             if 'codigo' in institucioneducativaid.keys():
@@ -120,11 +125,17 @@ def solicitudpresupuestal_consecutivo_api_view(request):
             solicitudpresupuestal_serializers = SolicitudpresupuestalcabeceraSerializers(solicitudpresupuestal)
             return Response(solicitudpresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            try:
-                solicitudpresupuestal.delete()
-                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('Solicitud presupuestal no puede ser eliminado',status = status.HTTP_400_BAD_REQUEST)            
+            #if Solicitudpresupuestaldetalle.objects.filter(solicitudpresupuestalcabeceraid = solicitudpresupuestal.id).count() == 0:
+                if solicitudpresupuestal.estado =='Procesado':
+                    #try:
+                    #solicitudpresupuestal.delete()
+                    solicitudpresupuestal.estado ='Anulado' 
+                    solicitudpresupuestal.save()
+                    return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
+                    #except RestrictedError:
+                    #    return Response('Solicitud presupuestal no puede ser eliminado',status = status.HTTP_400_BAD_REQUEST)   
+                return Response('Ingreso presupuestal no puede ser anulado en este Estado',status = status.HTTP_400_BAD_REQUEST)  
+            #return Response('Solicitud presupuestal no puede ser Anulada faltan detalles por eliminar',status = status.HTTP_400_BAD_REQUEST)          
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST)      
           
 def buscarsolicitudpresupuestal(request):

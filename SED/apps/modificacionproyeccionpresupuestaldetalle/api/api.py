@@ -1,10 +1,11 @@
+from operator import truediv
 from urllib import response
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 
 from apps.modificacionproyeccionpresupuestaldetalle.models import Modificacionproyeccionpresupuestaldetalle
-from apps.modificacionproyeccionpresupuestaldetalle.api.serializers import ModificacionproyeccionpresupuestaldetalleSerializers
+from apps.modificacionproyeccionpresupuestaldetalle.api.serializers import ModificacionproyeccionpresupuestaldetalleSerializers,ValidarModificacionproyeccionpresupuestaldetalleSerializers
 from apps.modificacionproyeccionpresupuestalcabecera.api.api import buscarmodificacionproyeccionpresupuestalcabecera_dict
 from apps.modificacionproyeccionpresupuestalcabecera.api.serializers import ModificacionproyeccionpresupuestalcabeceraSerializers
 from apps.fuenterecurso.api.api import buscarfuenterecurso_final
@@ -19,8 +20,10 @@ from apps.fuenterecurso.api.api import  buscarfuenterecursoingresopresupuestal
 from apps.rubropresupuestal.api.api import buscarrubro_solicitud
 
 
-@api_view(['GET','POST','DELETE'])
+
+@api_view(['GET','POST'])
 def modificacionproyeccionpresupuestaldetalle_api_view(request):
+   
     if request.method =='POST':
         data = request.data
         if 'modificacionproyeccionpresupuestalid' in data.keys():
@@ -51,13 +54,17 @@ def modificacionproyeccionpresupuestaldetalle_api_view(request):
                                     
                                     modificacionproyeccionpresupuestaldetalle_Serializers = ModificacionproyeccionpresupuestaldetalleSerializers(data = data)
                                     
-                                    if modificacionproyeccionpresupuestaldetalle_Serializers.is_valid():
-                                        
-                                        try:
+                                    if modificacionproyeccionpresupuestaldetalle_Serializers.is_valid(): 
+                                        modificacionserializers = ValidarModificacionproyeccionpresupuestaldetalleSerializers(data = data) 
+                                        if modificacionserializers.is_valid():
+                                            #return Response('prueba',status = status.HTTP_201_CREATED)
+                                            #return Response('creado',status = status.HTTP_201_CREATED)                                
+                                            #try:
                                             modificacionproyeccionpresupuestaldetalle_Serializers.save()
                                             return Response(modificacionproyeccionpresupuestaldetalle_Serializers.data,status = status.HTTP_201_CREATED)
-                                        except IntegrityError:
-                                            return Response('para el rubro y presupuesto seleccionado ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
+                                            #except IntegrityError:
+                                            #    return Response('para el rubro y presupuesto seleccionado ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
+                                        return Response(modificacionserializers.errors, status = status.HTTP_400_BAD_REQUEST)
                                     return Response(modificacionproyeccionpresupuestaldetalle_Serializers.errors, status = status.HTTP_400_BAD_REQUEST)
                                 return Response('rubro presupuestal no es de detalle',status = status.HTTP_400_BAD_REQUEST)
                             return Response('falta el nodo rubropresupuestalid para buscar rubro presupuestal',status = status.HTTP_400_BAD_REQUEST)
@@ -68,27 +75,31 @@ def modificacionproyeccionpresupuestaldetalle_api_view(request):
         return Response('falta el nodo modificacionproyeccionpresupuestalid para buscar la cabecera',status = status.HTTP_400_BAD_REQUEST)
     else:
         modificacionproyeccionpresupuestalcabecera = buscarmodificacionproyeccionpresupuestalcabecera(request)
-        if modificacionproyeccionpresupuestalcabecera:     
-            modificacionproyeccionpresupuestalcabecera_serializers = ModificacionproyeccionpresupuestalcabeceraSerializers(modificacionproyeccionpresupuestalcabecera)  
-            modificacionproyeccionpresupuestalcabecera_dict = dict(modificacionproyeccionpresupuestalcabecera_serializers.data)
-            institucioneducativa = modificacionproyeccionpresupuestalcabecera_dict['institucioneducativaid']
-            modificacionproyeccionpresupuestaldetalle = buscarproyeccionpresupuestalcabeceradetalle(request,modificacionproyeccionpresupuestalcabecera_serializers.data['id'])
+        if modificacionproyeccionpresupuestalcabecera:
+            modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).all()
             if modificacionproyeccionpresupuestaldetalle:
-                modificacionproyeccionpresupuestaldetalle_serializers = ModificacionproyeccionpresupuestaldetalleSerializers(modificacionproyeccionpresupuestaldetalle)
+                modificacionproyeccionpresupuestaldetalle_serializers = ModificacionproyeccionpresupuestaldetalleSerializers(modificacionproyeccionpresupuestaldetalle, many = True)
                 if request.method =='GET':                
                     return Response(modificacionproyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
-                elif request.method =='DELETE':
-                    modificacionproyeccionpresupuestaldetalle_dict = dict(modificacionproyeccionpresupuestaldetalle_serializers.data)
-                    fuenterecurso = modificacionproyeccionpresupuestaldetalle_dict['fuenterecursoid']   
-                    rubropresupuestal = modificacionproyeccionpresupuestaldetalle_dict['rubropresupuestalid']     
-                    if buscarfuenterecursoingresopresupuestal(fuenterecurso['id'],institucioneducativa['id'])==False:
-                        if buscarrubro_solicitud(institucioneducativa['id'],rubropresupuestal['id'])==False:
-                            modificacionproyeccionpresupuestaldetalle.delete()
-                            return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
-                        return Response("Rubro no puede ser eliminado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
-                    return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)
         return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
+@api_view(['GET','DELETE'])
+def modificacionproyeccionpresupuestaldetalle_id_api_view(request, id = None):    
+    modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(id = id).first()
+    if modificacionproyeccionpresupuestaldetalle:
+        if request.method =='GET':
+            modificacionproyeccionpresupuestaldetalle_serializers = ModificacionproyeccionpresupuestaldetalleSerializers(modificacionproyeccionpresupuestaldetalle)
+            return Response(modificacionproyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
+        elif request.method =='DELETE':            
+            fuenterecurso = modificacionproyeccionpresupuestaldetalle.fuenterecursoid 
+            rubropresupuestal = modificacionproyeccionpresupuestaldetalle.rubropresupuestalid   
+            if buscarfuenterecursoingresopresupuestal(fuenterecurso.id,modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id)==False:
+                if buscarrubro_solicitud(modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id,rubropresupuestal.id)==False:
+                    modificacionproyeccionpresupuestaldetalle.delete()
+                    return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                return Response("Rubro no puede ser eliminado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
+            return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
+    return Response('no Existe datos para el id seleccionado',status = status.HTTP_400_BAD_REQUEST) 
 
 def buscarproyeccionpresupuestalcabeceradetalle(request,modificacionproyeccionpresupuestalid):
     parametros = dict(request.query_params)
@@ -124,3 +135,4 @@ def buscarproyeccionpresupuestalcabeceradetalle(request,modificacionproyeccionpr
 
     modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalid,fuenterecursoid = fuenterecurso_parametros['id'],rubropresupuestalid= rubropresupuestal_parametros['id']).first()
     return modificacionproyeccionpresupuestaldetalle
+

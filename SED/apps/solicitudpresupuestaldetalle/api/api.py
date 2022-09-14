@@ -8,7 +8,7 @@ from apps.solicitudpresupuestalcabecera.models import Solicitudpresupuestalcabec
 
 from apps.solicitudpresupuestalcabecera.api.api import buscarsolicitudpresupuestalconsecutivo
 from apps.solicitudpresupuestalcabecera.api.api import buscarsolicitudpresupuestalconsecutivo_dict
-from apps.rubropresupuestal.api.api import Rubropresupuestal
+from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.rubropresupuestal.api.api import Rubropresupuestalserializers
 from apps.solicitudpresupuestaldetalle.models import Solicitudpresupuestaldetalle
 from apps.solicitudpresupuestaldetalle.api.serializers import SolicitudpresupuestaldetalleSerializers
@@ -16,6 +16,9 @@ from apps.rubropresupuestal.api.api import buscarrubropresupuestal_final
 from apps.rubropresupuestal.api.api import saldorubroporproyeccion
 from apps.institucioneducativa.models import Institucioneducativa
 from apps.rubropresupuestal.api.api import buscar_rubro_cdp
+from apps.fuenterecurso.models import Fuenterecurso
+from apps.fuenterecurso.api.api import buscarfuenterecurso_final
+
 @api_view(['GET','POST','DELETE'])
 def solicitudpresupuestaldetalle_api_view(request):
     if request.method =='POST':
@@ -47,32 +50,46 @@ def solicitudpresupuestaldetalle_api_view(request):
         else:
             return Response("falta el nodo rubropresupuestalid consultar rubro presupuestal",status = status.HTTP_400_BAD_REQUEST)  
 
-        if Solicitudpresupuestaldetalle.objects.filter(solicitudpresupuestalcabeceraid=solicitudpresupuestalcabecera.id,rubropresupuestalid=rubropresupuestal.id).count()==0:
-            solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(data=request.data)
-            if validarsaldorubroporproyeccion(solicitudpresupuestalcabeceraid['codigoinstitucioneducativa'],rubropresupuestal.id,request.data['valor'])==True:
-                if solicitudpresupuestaldetalle_serializers.is_valid():
-                    solicitudpresupuestaldetalle_serializers.save()
-                    return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
-                return Response(solicitudpresupuestaldetalle_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
-            return Response("el valor del rubro presupuestal supera el saldo proyectado",status = status.HTTP_400_BAD_REQUEST) 
-        return Response("el rubro presupuestal ya esta registrado en el documento",status = status.HTTP_400_BAD_REQUEST) 
+        if 'fuenterecursoid' in request.data.keys():
+            fuenterecursoid =  request.data.pop('fuenterecursoid') 
+            if 'codigo' in fuenterecursoid.keys():
+                fuenterecurso = buscarfuenterecurso_final(fuenterecursoid)                
+                if fuenterecurso:
+                    request.data.update({"fuenterecursoid":fuenterecurso.id})
+                else:
+                    return Response("fuente recurso no existe",status = status.HTTP_400_BAD_REQUEST)                             
+            else:
+                return Response("falta el nodo codigo para consultar fuente de recurso",status = status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response("falta el nodo fuenterecursoid consultar fuente de recurso",status = status.HTTP_400_BAD_REQUEST) 
+
+        
+        solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(data=request.data)
+        
+        if solicitudpresupuestaldetalle_serializers.is_valid():
+            #return Response("Guardando Datos",status = status.HTTP_201_CREATED)
+            solicitudpresupuestaldetalle_serializers.save()
+            return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
+        return Response(solicitudpresupuestaldetalle_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
+        
+        
         
     else: 
              
         solicitudpresupuestal = buscarsolicitudpresupuestalconsecutivo(request)
-        if solicitudpresupuestal:            
+        if solicitudpresupuestal: 
             solicitudpresupuestaldetalle = buscarsolicitudpresupuestaldetalle(request,solicitudpresupuestal.id)
             if solicitudpresupuestaldetalle:
                 solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(solicitudpresupuestaldetalle)
                 if request.method =='GET':
                     return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
                 elif request.method =='DELETE':
-                    if buscar_rubro_cdp(solicitudpresupuestal.institucioneducativaid.id,solicitudpresupuestaldetalle.rubropresupuestalid.id)==False:
-                        solicitudpresupuestaldetalle.delete()
-                        return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
-                    return Response("no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
+                    #if buscar_rubro_cdp(solicitudpresupuestal.institucioneducativaid.id,solicitudpresupuestaldetalle.rubropresupuestalid.id)==False:
+                    solicitudpresupuestaldetalle.delete()
+                    return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                    #return Response("no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)   
-        return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
+        return Response("No existe registro cabecera para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
 
 def buscarsolicitudpresupuestaldetalle(request,solicitudpresupuestalid):
     parametros = dict(request.query_params)

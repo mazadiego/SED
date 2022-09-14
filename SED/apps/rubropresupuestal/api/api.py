@@ -19,6 +19,8 @@ from apps.institucioneducativa.models import Institucioneducativa
 from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponibilidadpresupuestal
 from apps.ingresopresupuestal.models import Ingresopresupuestal
 from apps.recaudopresupuestal.models import Recaudopresupuestal
+from apps.modificacionproyeccionpresupuestalcabecera.models import Modificacionproyeccionpresupuestalcabecera
+from apps.modificacionproyeccionpresupuestaldetalle.models import Modificacionproyeccionpresupuestaldetalle
 
 @api_view(['GET','POST'])
 def rubropresupuestal_api_view(request):
@@ -137,8 +139,9 @@ def rubropresupuestal_proyectados_api_view(request):
             
             if institucioneducativa:            
                 institucioneducativaid = institucioneducativa.id                
+        #falta incluir las modificaciones para los rubrosno proyectados de inicio  pero si modificados con valor + despues
 
-        proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid,institucioneducativaid=institucioneducativaid).first()        
+        proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid,institucioneducativaid=institucioneducativaid, estado ='Aprobado').first()        
         if proyeccionpresupuestalcabecera:            
             proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(proyeccionpresupuestalid=proyeccionpresupuestalcabecera.id).values('rubropresupuestalid').annotate(total=Sum('valor'))
             if proyeccionpresupuestaldetalle:                
@@ -175,7 +178,7 @@ def rubropresupuestal_solicitados_api_view(request):
             if institucioneducativa:            
                 institucioneducativaid = institucioneducativa.id                
 
-        solicitudpresupuestalcabecera = Solicitudpresupuestalcabecera.objects.filter(fecha__year=periodocodigo,institucioneducativaid=institucioneducativaid).first()        
+        solicitudpresupuestalcabecera = Solicitudpresupuestalcabecera.objects.filter(fecha__year=periodocodigo,institucioneducativaid=institucioneducativaid, estado ='Procesado').first()        
         if solicitudpresupuestalcabecera:            
             solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.filter(solicitudpresupuestalcabeceraid=solicitudpresupuestalcabecera.id).values('rubropresupuestalid').annotate(total=Sum('valor'))
             if solicitudpresupuestaldetalle:                
@@ -323,18 +326,26 @@ def saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid):
     periodo = Periodo.objects.filter(activo = True).first()
     totalproyeccion = 0
     totalsolicitudes = 0
+    totalmodificaciones = 0
     if periodo:
         periodoid = periodo.id
         codigoperiodo = periodo.codigo
     
-    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ).first() 
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid, estado ='Aprobado').first() 
     
     if proyeccionpresupuestalcabecera:           
         proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = rubropresupuestalid,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('rubropresupuestalid').annotate(total=Sum('valor')).order_by()
         if proyeccionpresupuestaldetalle:
             totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
 
-    solicitudes = Solicitudpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativaid,fecha__year = codigoperiodo).all()
+    #se agregan las modificaciones
+    modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ,estado ='Procesado').first()
+    if modificacionproyeccionpresupuestalcabecera:                
+        modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = rubropresupuestalid,modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+        if modificacionproyeccionpresupuestaldetalle:
+            totalmodificaciones = modificacionproyeccionpresupuestaldetalle[0]['total']
+
+    solicitudes = Solicitudpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativaid,fecha__year = codigoperiodo, estado = 'Procesado').all()
    
     for solicitud in solicitudes:
         solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.filter(rubropresupuestalid=rubropresupuestalid,solicitudpresupuestalcabeceraid=solicitud.id).values('rubropresupuestalid').annotate(total=Sum('valor')).order_by()
@@ -342,7 +353,7 @@ def saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid):
             totalsolicitudes = totalsolicitudes + solicitudpresupuestaldetalle[0]['total']
 
     
-    saldo = totalproyeccion - totalsolicitudes 
+    saldo = (totalproyeccion + totalmodificaciones) - totalsolicitudes 
 
     return saldo
 
@@ -353,7 +364,7 @@ def buscarrubro_solicitud(institucioneducativaid,rubropresupuestalid):
     if periodo:
         codigoperiodo = periodo.codigo     
 
-    if Solicitudpresupuestaldetalle.objects.select_related('solicitudpresupuestalcabeceraid').filter(solicitudpresupuestalcabeceraid__institucioneducativaid__id=institucioneducativaid,solicitudpresupuestalcabeceraid__fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).count()>0:
+    if Solicitudpresupuestaldetalle.objects.select_related('solicitudpresupuestalcabeceraid').filter(solicitudpresupuestalcabeceraid__estado = 'Procesado',solicitudpresupuestalcabeceraid__institucioneducativaid__id=institucioneducativaid,solicitudpresupuestalcabeceraid__fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).count()>0:
         return True
     else:
         return False
@@ -366,7 +377,7 @@ def saldo_rubro_solicitud(institucioneducativaid,rubropresupuestalid):
     if periodo:
         codigoperiodo = periodo.codigo     
 
-    solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.select_related('solicitudpresupuestalcabeceraid').filter(solicitudpresupuestalcabeceraid__institucioneducativaid__id=institucioneducativaid,solicitudpresupuestalcabeceraid__fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).values('rubropresupuestalid').annotate(total=Sum('valor'))
+    solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.select_related('solicitudpresupuestalcabeceraid').filter(solicitudpresupuestalcabeceraid__estado = 'Procesado',solicitudpresupuestalcabeceraid__institucioneducativaid__id=institucioneducativaid,solicitudpresupuestalcabeceraid__fecha__year=codigoperiodo,rubropresupuestalid=rubropresupuestalid).values('rubropresupuestalid').annotate(total=Sum('valor'))
     
     if solicitudpresupuestaldetalle:
         saldo = solicitudpresupuestaldetalle[0]['total']
@@ -396,7 +407,7 @@ def saldo_rubro_recaudos(institucioneducativaid,rubropresupuestalid):
         periodoid = periodo.id
         codigoperiodo = periodo.codigo     
 
-    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ).first() 
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid, estado ='Aprobado' ).first() 
     
     if proyeccionpresupuestalcabecera:           
         fuenterecursos = Proyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = rubropresupuestalid,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid','rubropresupuestalid').all()

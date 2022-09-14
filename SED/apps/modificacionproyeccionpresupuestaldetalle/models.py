@@ -14,10 +14,5 @@ class Modificacionproyeccionpresupuestaldetalle(models.Model):
     
     
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['modificacionproyeccionpresupuestalid', 'fuenterecursoid','rubropresupuestalid'], name="UK_modificacionproyeccionpresupuestalid_fuenterecursoid_rubropresupuestalid_unique")
-        ]
-
 def __str__(self):
     return f'{self.modificacionproyeccionpresupuestalid} {self.fuenterecursoid} {self.rubropresupuestalid} {self.valor}'

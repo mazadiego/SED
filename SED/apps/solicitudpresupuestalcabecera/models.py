@@ -16,6 +16,8 @@ class Solicitudpresupuestalcabecera(models.Model):
     fechainiciocontrato = models.DateField(null=False)
     fechafincontrato = models.DateField(null=False)
     contratonumero = models.CharField(max_length=50,null=False)
+    objeto = models.CharField(max_length=5000, null=False,default='')
+    estado = models.CharField(max_length=50, null=False,default='Procesado')
 
     class Meta:
         constraints = [
@@ -23,4 +25,4 @@ class Solicitudpresupuestalcabecera(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.institucioneducativaid} {self.consecutivo} {self.fecha}{self.observacion}{self.personalplantaidsolicitante}{self.personalplantaidsolicitado}{self.terceroid}{self.tipocontratoid}{self.fechainiciocontrato}{self.fechafincontrato}{self.contratonumero}'
+        return f'{self.institucioneducativaid} {self.consecutivo} {self.fecha}{self.observacion}{self.personalplantaidsolicitante}{self.personalplantaidsolicitado}{self.terceroid}{self.tipocontratoid}{self.fechainiciocontrato}{self.fechafincontrato}{self.contratonumero}{self.objeto}{self.estado} '

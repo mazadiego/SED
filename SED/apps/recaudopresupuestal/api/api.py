@@ -263,7 +263,7 @@ def validar_recaudo_solicitud(institucioneducativaid,fuenterecursoid):
     validar = False
     periodo = Periodo.objects.filter(activo = True).first()
     if periodo:
-        rubros = Proyeccionpresupuestaldetalle.objects.select_related('proyeccionpresupuestalid','proyeccionpresupuestalid__periodoid').values('rubropresupuestalid').filter(proyeccionpresupuestalid__institucioneducativaid =institucioneducativaid,fuenterecursoid=fuenterecursoid,proyeccionpresupuestalid__periodoid__id=periodo.id).all()
+        rubros = Proyeccionpresupuestaldetalle.objects.select_related('proyeccionpresupuestalid','proyeccionpresupuestalid__periodoid').values('rubropresupuestalid').filter(proyeccionpresupuestalid__estado = 'Aprobado',proyeccionpresupuestalid__institucioneducativaid =institucioneducativaid,fuenterecursoid=fuenterecursoid,proyeccionpresupuestalid__periodoid__id=periodo.id).all()
 
         for rubro in rubros:
             if buscarrubro_solicitud(institucioneducativaid.id,rubro['rubropresupuestalid']):
@@ -275,10 +275,12 @@ def validar_recaudo_cdp(institucioneducativaid,fuenterecursoid):
     validar = False
     periodo = Periodo.objects.filter(activo = True).first()
     if periodo:
-        rubros = Proyeccionpresupuestaldetalle.objects.select_related('proyeccionpresupuestalid','proyeccionpresupuestalid__periodoid').values('rubropresupuestalid').filter(proyeccionpresupuestalid__institucioneducativaid =institucioneducativaid,fuenterecursoid=fuenterecursoid,proyeccionpresupuestalid__periodoid__id=periodo.id).all()
+        rubros = Proyeccionpresupuestaldetalle.objects.select_related('proyeccionpresupuestalid','proyeccionpresupuestalid__periodoid').values('rubropresupuestalid').filter(proyeccionpresupuestalid__estado = 'Aprobado',proyeccionpresupuestalid__institucioneducativaid =institucioneducativaid,fuenterecursoid=fuenterecursoid,proyeccionpresupuestalid__periodoid__id=periodo.id).all()
 
         for rubro in rubros:
             if buscar_rubro_cdp(institucioneducativaid.id,rubro['rubropresupuestalid']):
                 validar = True                
                 break
     return validar
+
+    

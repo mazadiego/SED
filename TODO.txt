@@ -73,3 +73,16 @@ se debe enviar el un listo con el json de esta forma en esa misma ruta esta la o
 	"valor":"25000000"
 	}
 	]
+
+1-no debe exigir la observación (ok)
+2-debe tener un método put para modificar, solo se puede modificar si está procesada, y aún no ha sido importada en un recaudo (ok)
+3-solo se puede anular si no ha sido importada en un recaudo (ok)
+
+	--controles a la modificacion en el detalle solo puede agregar siempre que una combinacion rubro fuente este proyectada	
+		o en la modificacion con valor postivio modificadada siempre y cuando la modificacion a ingresar sea negativa (ok)
+	--quitar la llave en el detalle de la modificacion (ok)
+	--las modificaciones + mas la proyectada al restar la - no puede ser menor que cero
+	--cada que se registre un valor - en la modifcacion no puede superar el saldo del rubro 
+	proyectado= proyeccion + modificaciones positiva +
+
+	modificaciones negativas - + solicitudes 

@@ -13,7 +13,7 @@ class SolicitudpresupuestalcabeceraSerializers(serializers.ModelSerializer):
     solicitudpresupuestaldetalle = SolicitudpresupuestaldetalleSerializers(many=True, read_only=True)
     class Meta:
         model = Solicitudpresupuestalcabecera
-        fields=['id','institucioneducativaid','consecutivo','fecha','observacion','personalplantaidsolicitante','personalplantaidsolicitado','terceroid','tipocontratoid','fechainiciocontrato','fechafincontrato','contratonumero','solicitudpresupuestaldetalle']
+        fields=['id','institucioneducativaid','consecutivo','fecha','observacion','personalplantaidsolicitante','personalplantaidsolicitado','terceroid','tipocontratoid','fechainiciocontrato','fechafincontrato','contratonumero','solicitudpresupuestaldetalle','objeto','estado']
 
     def validate_fecha(selft,value):
         periodo = Periodo.objects.filter(activo = True).first()

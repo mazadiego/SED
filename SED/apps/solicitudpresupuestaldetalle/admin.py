@@ -1,3 +1,6 @@
+from atexit import register
 from django.contrib import admin
-#from .models import s
+from .models import Solicitudpresupuestaldetalle
 # Register your models here.
+
+admin.site.register(Solicitudpresupuestaldetalle)
