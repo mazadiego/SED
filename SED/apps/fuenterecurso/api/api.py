@@ -351,7 +351,7 @@ def saldo_fuente_recaudos(institucioneducativaid,fuenterecursoid):
 
     ingresos = Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo,fuenterecursoid = fuenterecursoid, estado ='Procesado').all() 
     for ingresopresupuestal in ingresos:            
-        recaudos = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal[0].id, estado ='Procesado').values('ingresopresupuestalid').annotate(total=Sum('valor'))
+        recaudos = Recaudopresupuestal.objects.filter(ingresopresupuestalid = ingresopresupuestal.id, estado ='Procesado').values('ingresopresupuestalid').annotate(total=Sum('valor'))
         if recaudos:
             totalrecaudos = totalrecaudos + recaudos[0]['total']
 
