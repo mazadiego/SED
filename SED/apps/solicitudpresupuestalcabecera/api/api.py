@@ -9,9 +9,6 @@ from apps.solicitudpresupuestalcabecera.models import Solicitudpresupuestalcabec
 from apps.solicitudpresupuestalcabecera.api.serializers import SolicitudpresupuestalcabeceraSerializers
 from apps.institucioneducativa.models import Institucioneducativa
 from apps.personalplanta.models import Personalplanta
-from apps.tercero.models import Tercero
-from apps.tipoidentificacion.models import Tipoidentificacion
-from apps.tipocontrato.models import Tipocontrato
 from apps.periodo.models import Periodo
 from apps.institucioneducativa.api.serializers import InstitucioneducativaSerializer
 from apps.consecutivo.api.api import consultarconsecutivo
@@ -29,11 +26,7 @@ def solicitudpresupuestalcabecera_api_view(request):
     elif request.method =='POST':
         institucioneducativa = Institucioneducativa()
         personalplantasolicitante =  Personalplanta()
-        personalplantasolicitado =Personalplanta()
-        tercero = Tercero()
-        tipocontrato = Tipocontrato()
-
-        
+        personalplantasolicitado =Personalplanta() 
         consecutivo = 0
 
         if 'estado' in request.data.keys():
@@ -80,31 +73,6 @@ def solicitudpresupuestalcabecera_api_view(request):
         else:
             return Response("falta el nodo personalplantaidsolicitado",status = status.HTTP_400_BAD_REQUEST)   
 
-        if 'terceroid' in request.data.keys():
-            terceroid = request.data.pop('terceroid')
-            if 'codigo' in terceroid.keys():                                    
-                    tercero = Tercero.objects.filter(codigo = terceroid['codigo']).first()
-                    if tercero:
-                        request.data.update({"terceroid": tercero.id})
-                    else:
-                        return Response("tercero no existe",status = status.HTTP_400_BAD_REQUEST)           
-            else:
-                return Response("falta el nodo codigo para consultar el tercero",status = status.HTTP_400_BAD_REQUEST)       
-        else:
-            return Response("falta el nodo terceroid",status = status.HTTP_400_BAD_REQUEST)   
-        
-        if 'tipocontratoid' in request.data.keys():
-            tipocontratoid = request.data.pop('tipocontratoid')
-            if 'codigo' in tipocontratoid.keys():
-                tipocontrato = Tipocontrato.objects.filter(codigo = tipocontratoid['codigo']).first()                
-                if tipocontrato:
-                    request.data.update({"tipocontratoid": tipocontrato.id})
-                else:
-                    return Response("tipo contrato no existe",status =status.HTTP_400_BAD_REQUEST)        
-            else:
-                return Response("falta el nodo codigo para consultar tipo contrato",status =status.HTTP_400_BAD_REQUEST)    
-        else:
-            return Response("falta el nodo tipocontratoid",status =status.HTTP_400_BAD_REQUEST)
                 
         consecutivo = consultarconsecutivo(3,institucioneducativa.id)
         request.data['consecutivo'] = consecutivo
