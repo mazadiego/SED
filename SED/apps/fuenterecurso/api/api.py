@@ -299,6 +299,44 @@ def saldofuenterecursoporingreso(fuenterecursoid, institucioneducativaid,valorac
     else:
         return False
 
+def saldofuenterecursoporingreso_elim(fuenterecursoid, institucioneducativaid):
+    saldo = 0
+    codigoperiodo = 0
+    periodoid = 0
+    periodo = Periodo.objects.filter(activo = True).first()
+    totalproyeccion=0
+    totalingreso=0
+    totalmodificaciones=0
+    if periodo:
+        periodoid = periodo.id
+        codigoperiodo = periodo.codigo
+    
+    proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ,estado ='Aprobado').first() 
+
+    if proyeccionpresupuestalcabecera:           
+        proyeccionpresupuestaldetalle = Proyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecursoid,proyeccionpresupuestalid = proyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+        if proyeccionpresupuestaldetalle:
+            totalproyeccion =proyeccionpresupuestaldetalle[0]['total']
+
+    ingresopresupuestal = Ingresopresupuestal.objects.filter(fuenterecursoid = fuenterecursoid, institucioneducativaid = institucioneducativaid, fecha__year = codigoperiodo, estado ='Procesado').values('fuenterecursoid').annotate(total=Sum('valor'))
+    if ingresopresupuestal:
+        totalingreso = ingresopresupuestal[0]['total']
+    else:
+        totalingreso = 0
+
+    #se agregan las modificaciones
+    modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ,estado ='Procesado').first()
+    if modificacionproyeccionpresupuestalcabecera:                
+        modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(fuenterecursoid = fuenterecursoid,modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+        if modificacionproyeccionpresupuestaldetalle:
+            totalmodificaciones = modificacionproyeccionpresupuestaldetalle[0]['total']
+
+    
+    saldo = (totalproyeccion + totalmodificaciones) - (totalingreso)
+    
+    return saldo
+    
+
 def saldofuenterecursoporingreso_mod(ingresopresupuestal,valoractual):
     saldo = 0
     codigoperiodo = 0
