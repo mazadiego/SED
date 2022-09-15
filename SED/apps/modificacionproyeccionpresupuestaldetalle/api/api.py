@@ -8,7 +8,7 @@ from apps.modificacionproyeccionpresupuestaldetalle.models import Modificacionpr
 from apps.modificacionproyeccionpresupuestaldetalle.api.serializers import ModificacionproyeccionpresupuestaldetalleSerializers,ValidarModificacionproyeccionpresupuestaldetalleSerializers
 from apps.modificacionproyeccionpresupuestalcabecera.api.api import buscarmodificacionproyeccionpresupuestalcabecera_dict
 from apps.modificacionproyeccionpresupuestalcabecera.api.serializers import ModificacionproyeccionpresupuestalcabeceraSerializers
-from apps.fuenterecurso.api.api import buscarfuenterecurso_final
+from apps.fuenterecurso.api.api import buscarfuenterecurso_final, saldofuenterecursoporingreso_elim
 from apps.fuenterecurso.api.serializers import Fuenterecursoserializers
 from apps.rubropresupuestal.api.api import buscarrubropresupuestal_final
 from apps.rubropresupuestal.api.serializers import Rubropresupuestalserializers
@@ -18,7 +18,7 @@ from apps.fuenterecurso.models import Fuenterecurso
 from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.fuenterecurso.api.api import  buscarfuenterecursoingresopresupuestal
 from apps.rubropresupuestal.api.api import buscarrubro_solicitud
-
+from apps.rubropresupuestal.api.api import saldorubroporproyeccion
 
 
 @api_view(['GET','POST'])
@@ -57,13 +57,9 @@ def modificacionproyeccionpresupuestaldetalle_api_view(request):
                                     if modificacionproyeccionpresupuestaldetalle_Serializers.is_valid(): 
                                         modificacionserializers = ValidarModificacionproyeccionpresupuestaldetalleSerializers(data = data) 
                                         if modificacionserializers.is_valid():
-                                            #return Response('prueba',status = status.HTTP_201_CREATED)
-                                            #return Response('creado',status = status.HTTP_201_CREATED)                                
-                                            #try:
                                             modificacionproyeccionpresupuestaldetalle_Serializers.save()
                                             return Response(modificacionproyeccionpresupuestaldetalle_Serializers.data,status = status.HTTP_201_CREATED)
-                                            #except IntegrityError:
-                                            #    return Response('para el rubro y presupuesto seleccionado ya tiene registrados valores en el periodo actual',status = status.HTTP_400_BAD_REQUEST)
+                                            
                                         return Response(modificacionserializers.errors, status = status.HTTP_400_BAD_REQUEST)
                                     return Response(modificacionproyeccionpresupuestaldetalle_Serializers.errors, status = status.HTTP_400_BAD_REQUEST)
                                 return Response('rubro presupuestal no es de detalle',status = status.HTTP_400_BAD_REQUEST)
@@ -92,13 +88,15 @@ def modificacionproyeccionpresupuestaldetalle_id_api_view(request, id = None):
             return Response(modificacionproyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
         elif request.method =='DELETE':            
             fuenterecurso = modificacionproyeccionpresupuestaldetalle.fuenterecursoid 
-            rubropresupuestal = modificacionproyeccionpresupuestaldetalle.rubropresupuestalid   
-            if buscarfuenterecursoingresopresupuestal(fuenterecurso.id,modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id)==False:
-                if buscarrubro_solicitud(modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id,rubropresupuestal.id)==False:
-                    modificacionproyeccionpresupuestaldetalle.delete()
-                    return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
-                return Response("Rubro no puede ser eliminado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
-            return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
+            rubropresupuestal = modificacionproyeccionpresupuestaldetalle.rubropresupuestalid  
+            if validaciones_eliminar(modificacionproyeccionpresupuestaldetalle)==True: 
+                if buscarfuenterecursoingresopresupuestal(fuenterecurso.id,modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id)==False:
+                    if buscarrubro_solicitud(modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id,rubropresupuestal.id)==False:
+                        modificacionproyeccionpresupuestaldetalle.delete()
+                        return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
+                    return Response("Rubro no puede ser eliminado esta asigando a una solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)
+                return Response("Fuente de recurso no puede ser eliminada ya tiene ingreso presupuestal registrado",status = status.HTTP_400_BAD_REQUEST)
+            return Response("detalle no se peude eliminar afecta saldo de fuente o rubro ",status = status.HTTP_400_BAD_REQUEST)
     return Response('no Existe datos para el id seleccionado',status = status.HTTP_400_BAD_REQUEST) 
 
 def buscarproyeccionpresupuestalcabeceradetalle(request,modificacionproyeccionpresupuestalid):
@@ -135,4 +133,18 @@ def buscarproyeccionpresupuestalcabeceradetalle(request,modificacionproyeccionpr
 
     modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalid,fuenterecursoid = fuenterecurso_parametros['id'],rubropresupuestalid= rubropresupuestal_parametros['id']).first()
     return modificacionproyeccionpresupuestaldetalle
+
+def validaciones_eliminar(modificacionproyeccionpresupuestaldetalle):
+
+    saldofuente = 0
+    saldorubro  = 0
+
+    saldofuente = saldofuenterecursoporingreso_elim (modificacionproyeccionpresupuestaldetalle.fuenterecursoid.id,modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.id) - modificacionproyeccionpresupuestaldetalle.valor
+
+    saldorubro = saldorubroporproyeccion(modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.id,modificacionproyeccionpresupuestaldetalle.rubropresupuestalid.id) - modificacionproyeccionpresupuestaldetalle.valor
+
+    if (saldofuente < 0) or (saldorubro < 0):
+        return False
+    else:
+        return True
 
