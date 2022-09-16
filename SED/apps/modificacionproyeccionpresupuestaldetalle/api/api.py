@@ -139,10 +139,10 @@ def validaciones_eliminar(modificacionproyeccionpresupuestaldetalle):
     saldofuente = 0
     saldorubro  = 0
 
-    saldofuente = saldofuenterecursoporingreso_elim (modificacionproyeccionpresupuestaldetalle.fuenterecursoid.id,modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.id) - modificacionproyeccionpresupuestaldetalle.valor
+    saldofuente = saldofuenterecursoporingreso_elim (modificacionproyeccionpresupuestaldetalle.fuenterecursoid.id,modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id) - modificacionproyeccionpresupuestaldetalle.valor
 
-    saldorubro = saldorubroporproyeccion(modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.id,modificacionproyeccionpresupuestaldetalle.rubropresupuestalid.id) - modificacionproyeccionpresupuestaldetalle.valor
-
+    saldorubro = saldorubroporproyeccion(modificacionproyeccionpresupuestaldetalle.modificacionproyeccionpresupuestalid.institucioneducativaid.id,modificacionproyeccionpresupuestaldetalle.rubropresupuestalid.id) - modificacionproyeccionpresupuestaldetalle.valor
+    
     if (saldofuente < 0) or (saldorubro < 0):
         return False
     else:

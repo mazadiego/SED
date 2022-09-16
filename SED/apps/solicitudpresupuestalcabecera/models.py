@@ -7,7 +7,7 @@ class Solicitudpresupuestalcabecera(models.Model):
     institucioneducativaid = models.ForeignKey(Institucioneducativa, on_delete=models.RESTRICT)
     consecutivo = models.PositiveIntegerField(null=False)
     fecha = models.DateField(null=False)
-    observacion = models.CharField(max_length=5000,null=False)
+    observacion = models.CharField(max_length=5000,null=True,blank=True)
     personalplantaidsolicitante = models.ForeignKey(Personalplanta, on_delete= models.RESTRICT,related_name="FK_personalplantaidsolicitante")
     personalplantaidsolicitado = models.ForeignKey(Personalplanta, on_delete= models.RESTRICT,related_name="FK_personalplantaidsolicitado")
     objeto = models.CharField(max_length=5000, null=False,default='')

@@ -341,7 +341,7 @@ def saldorubroporproyeccion(institucioneducativaid,rubropresupuestalid):
     #se agregan las modificaciones
     modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(periodoid=periodoid, institucioneducativaid = institucioneducativaid ,estado ='Procesado').first()
     if modificacionproyeccionpresupuestalcabecera:                
-        modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = rubropresupuestalid,modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).values('fuenterecursoid').annotate(total=Sum('valor')).order_by()
+        modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(rubropresupuestalid = rubropresupuestalid,modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).values('rubropresupuestalid').annotate(total=Sum('valor')).order_by()
         if modificacionproyeccionpresupuestaldetalle:
             totalmodificaciones = modificacionproyeccionpresupuestaldetalle[0]['total']
 
