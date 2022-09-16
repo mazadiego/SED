@@ -88,7 +88,7 @@ se debe enviar el un listo con el json de esta forma en esa misma ruta esta la o
 	modificaciones negativas - + solicitudes 
 
 Correcciones 
--El sistema esta permitiendo eliminar detalle en la modificacion presupuesto, si tener en cuenta que el saldo se vaya a negativo [PENDIENTE]
 -http://127.0.0.1:8000/fuenterecurso/fuenterecursoporrecaudo/saldo/?codigoinstitucioneducativa=0001&codigofuenterecurso=D no esta funcionando bien [OK]
 -El documento solicitud presupuesto ya no debe tener los campos de terceros [PENDIENTE]
 -En solicitud presupuesto la observacion no debe ser obligatoria [PENDIENTE]
+-El sistema esta permitiendo eliminar detalle en la modificacion presupuesto, si tener en cuenta que el saldo se vaya a negativo [ERROR]
