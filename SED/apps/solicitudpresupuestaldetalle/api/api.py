@@ -91,7 +91,7 @@ def solicitudpresupuestaldetalle_id_api_view(request, id = None):
             return Response(solicitudpresupuestaldetalle_serializers.data, status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
             if solicitudpresupuestaldetalle.solicitudpresupuestalcabeceraid.estado == 'Procesado':                
-                if Certificadodisponibilidadpresupuestal.objects.filter(solicitudpresupuestalcabeceraid = solicitudpresupuestaldetalle.solicitudpresupuestalcabeceraid.id).count() == 0:
+                if Certificadodisponibilidadpresupuestal.objects.filter(solicitudpresupuestalcabeceraid = solicitudpresupuestaldetalle.solicitudpresupuestalcabeceraid.id, estado = 'Procesado').count() == 0:
                     solicitudpresupuestaldetalle.delete()
                     return Response('Eliminado Correctamente', status= status.HTTP_200_OK)
                 return Response('No se puede se eliminado detalle documento relacionado a un CDP',status = status.HTTP_400_BAD_REQUEST)  

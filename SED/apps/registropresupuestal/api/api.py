@@ -13,6 +13,7 @@ from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponi
 from apps.obligacionpresupuestal.models import Obligacionpresupuestal
 from django.db.models.deletion import RestrictedError
 from django.db.models import Count,Sum
+from apps.tipocontrato.models import Tipocontrato
 
 from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
@@ -30,7 +31,10 @@ def registropresupuestal_api_view(request):
         cdp = Certificadodisponibilidadpresupuestal()
         consecutivo = 0
         consecutivocdp = 0
-        
+
+        if 'estado' in request.data.keys():
+            request.data['estado'] = 'Procesado'
+
         if 'institucioneducativaid' in request.data.keys():
             institucioneducativaid = request.data.pop('institucioneducativaid')
             if 'codigo' in institucioneducativaid.keys():
@@ -60,8 +64,7 @@ def registropresupuestal_api_view(request):
         if 'certificadodisponibilidadpresupuestalid' in request.data.keys():
             certificadodisponibilidadpresupuestalid = request.data.pop('certificadodisponibilidadpresupuestalid')
             if 'consecutivo' in certificadodisponibilidadpresupuestalid.keys():
-                consecutivocdp = certificadodisponibilidadpresupuestalid['consecutivo']
-                
+                consecutivocdp = certificadodisponibilidadpresupuestalid['consecutivo']                
                 cdp = Certificadodisponibilidadpresupuestal.objects.filter(institucioneducativaid = institucioneducativa.id, consecutivo = consecutivocdp).first() 
                 if cdp:
                     request.data.update({"certificadodisponibilidadpresupuestalid": cdp.id})
@@ -71,6 +74,19 @@ def registropresupuestal_api_view(request):
                 return Response("falta el nodo consecutivo para consultar CDP",status = status.HTTP_400_BAD_REQUEST)   
         else:
             return Response("falta el nodo certificadodisponibilidadpresupuestalid",status = status.HTTP_400_BAD_REQUEST) 
+
+        if 'tipocontratoid' in request.data.keys():
+            tipocontratoid = request.data.pop('tipocontratoid')
+            if 'codigo' in tipocontratoid.keys():                              
+                tipocontrato = Tipocontrato.objects.filter(codigo = tipocontratoid['codigo']).first() 
+                if tipocontrato:
+                    request.data.update({"tipocontratoid": tipocontrato.id})
+                else:
+                    return Response("Tipo contrato no existe",status = status.HTTP_400_BAD_REQUEST)                     
+            else:
+                return Response("falta el nodo codigo para consultar tipo contrato",status = status.HTTP_400_BAD_REQUEST)   
+        else:
+            return Response("falta el nodo tipocontratoid",status = status.HTTP_400_BAD_REQUEST) 
 
         consecutivo = consultarconsecutivo(5,institucioneducativa.id)
         request.data['consecutivo'] = consecutivo
@@ -89,13 +105,17 @@ def registropresupuestal_consecutivo_api_view(request):
         if request.method =='GET': 
             registropresupuestal_serializers = Registropresupuestalserializers(registropresupuestal)
             return Response(registropresupuestal_serializers.data,status = status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            
-            try:
-                registropresupuestal.delete()
-                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('RP no puede ser eliminado esta asociado a un Obligacion Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
+        elif request.method == 'DELETE': 
+            if registropresupuestal.estado == 'Procesado': 
+                registropresupuestal.estado = 'Anulado'          
+                registropresupuestal.save()
+                return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
+                #try: falata verificar si esta asociado a una OP procesado
+                #    registropresupuestal.delete()
+                #    return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
+                #except RestrictedError:
+                #    return Response('RP no puede ser eliminado esta asociado a un Obligacion Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
+            return Response('RP no puede ser eliminado en este Estado',status = status.HTTP_400_BAD_REQUEST)
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
 
 def buscar_rp_consecutivo(request):

@@ -95,7 +95,7 @@ def solicitudpresupuestal_consecutivo_api_view(request):
             solicitudpresupuestal_serializers = SolicitudpresupuestalcabeceraSerializers(solicitudpresupuestal)
             return Response(solicitudpresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':            
-            if Certificadodisponibilidadpresupuestal.objects.filter(solicitudpresupuestalcabeceraid = solicitudpresupuestal.id).count() == 0:
+            if Certificadodisponibilidadpresupuestal.objects.filter(solicitudpresupuestalcabeceraid = solicitudpresupuestal.id, estado = 'Procesado').count() == 0:
                 if solicitudpresupuestal.estado =='Procesado':                    
                     solicitudpresupuestal.estado ='Anulado' 
                     solicitudpresupuestal.save()

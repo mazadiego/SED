@@ -75,16 +75,13 @@ def certificadodisponibilidadpresupuestal_consecutivo_api_view(request):
             certificadodisponibilidadpresupuestal_serializers = CertificadodisponibilidadpresupuestalSerializers(certificadodisponibilidadpresupuestal)
             return Response(certificadodisponibilidadpresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            if certificadodisponibilidadpresupuestal.estado =='Procesado':
-                certificadodisponibilidadpresupuestal.estado ='Anulado'
-                certificadodisponibilidadpresupuestal.save()
-                return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
-                #try: falata validar que no este asociado a un registro presupuestal 
-                #    certificadodisponibilidadpresupuestal.delete()
-                #    return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-                #except RestrictedError:
-                #    return Response('CDP no puede ser eliminado esta asociado a un Registro Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
-            return Response('CDP no puede ser eliminado en este Estado',status = status.HTTP_400_BAD_REQUEST)
+            if Registropresupuestal.objects.filter(certificadodisponibilidadpresupuestalid = certificadodisponibilidadpresupuestal.id, estado = 'Procesado').count()==0:
+                if certificadodisponibilidadpresupuestal.estado =='Procesado':
+                    certificadodisponibilidadpresupuestal.estado ='Anulado'
+                    certificadodisponibilidadpresupuestal.save()
+                    return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)                    
+                return Response('CDP no puede ser eliminado en este Estado',status = status.HTTP_400_BAD_REQUEST)
+            return Response('CDP no puede ser eliminado esta asociado a un Registro Presupuestal',status = status.HTTP_400_BAD_REQUEST) 
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
         
 
@@ -140,7 +137,7 @@ def saldocdp_por_rp(cdpid):
     cdp = Certificadodisponibilidadpresupuestal.objects.filter(id=cdpid).first()
     if cdp:
         totalcdp = cdp.valor
-        rp = Registropresupuestal.objects.filter(certificadodisponibilidadpresupuestalid = cdp.id).values('certificadodisponibilidadpresupuestalid').annotate(total=Sum('valor'))
+        rp = Registropresupuestal.objects.filter(certificadodisponibilidadpresupuestalid = cdp.id, estado = 'Procesado').values('certificadodisponibilidadpresupuestalid').annotate(total=Sum('valor'))
         if rp:
             totalrp = rp[0]['total']
 

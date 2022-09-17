@@ -9,12 +9,13 @@ from apps.tercero.api.api import TerceroSerializer
 from apps.certificadodisponibilidadpresupuestal.api.api import CertificadodisponibilidadpresupuestalSerializers
 from apps.periodo.models import Periodo
 from apps.certificadodisponibilidadpresupuestal.api.api import saldocdp_por_rp
+from apps.tipocontrato.api.serializers import TipocontratoSerializer
 
 class Registropresupuestalserializers(serializers.ModelSerializer):
 
     class Meta: 
         model=Registropresupuestal
-        fields=['institucioneducativaid','consecutivo','fecha','terceroid','observacion','certificadodisponibilidadpresupuestalid','valor']
+        fields=['institucioneducativaid','consecutivo','fecha','terceroid','observacion','certificadodisponibilidadpresupuestalid','valor','objeto','estado','tipocontratoid','fechainiciocontrato','fechafincontrato','contratonumero']
 
     def validate_valor(selft,value):        
         if value == None or value<=0:
@@ -42,10 +43,36 @@ class Registropresupuestalserializers(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "certificadodisponibilidadpresupuestalid": "falta el nodo  certificadodisponibilidadpresupuestalid."            
             })
-        saldocdp = saldocdp_por_rp(data['certificadodisponibilidadpresupuestalid'].id) - data['valor']
+
+        if 'fechainiciocontrato' not in data.keys():
+            raise serializers.ValidationError({
+                "fechainiciocontrato": "falta el nodo  fechainiciocontrato."            
+            })
+
+        if 'fechafincontrato' not in data.keys():
+            raise serializers.ValidationError({
+                "fechafincontrato": "falta el nodo  fechafincontrato."            
+            })
+        
+        if 'contratonumero' not in data.keys():
+            raise serializers.ValidationError({
+                "contratonumero": "falta el nodo  contratonumero."            
+            })
+        
+        cdp = data['certificadodisponibilidadpresupuestalid']
+
+        if cdp.estado != 'Procesado':
+            raise serializers.ValidationError({
+                "estado":" el CDP debe tener estado procesado para poder ser relacionado a un RP"
+            }
+            )
+
+        saldocdp = saldocdp_por_rp(cdp.id) - data['valor']
 
         if saldocdp < 0:
-            raise serializers.ValidationError("El valor ingresado sobrepasa el saldo del cdp expedido")
+            raise serializers.ValidationError({
+                "CDP":"El valor ingresado sobrepasa el saldo del cdp expedido"
+                })
 
         return data
 
@@ -54,4 +81,5 @@ class Registropresupuestalserializers(serializers.ModelSerializer):
         registropresupuestal['institucioneducativaid']=InstitucioneducativaSerializer(instance.institucioneducativaid).data
         registropresupuestal['terceroid']=TerceroSerializer(instance.terceroid).data
         registropresupuestal['certificadodisponibilidadpresupuestalid'] = CertificadodisponibilidadpresupuestalSerializers(instance.certificadodisponibilidadpresupuestalid).data
+        registropresupuestal['tipocontratoid'] = TipocontratoSerializer(instance.tipocontratoid).data
         return registropresupuestal
