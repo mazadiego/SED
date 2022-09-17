@@ -69,16 +69,16 @@ def modificacionproyeccionpresupuestaldetalle_api_view(request):
                 return Response("modificacion proyeccion presupuestal no existe para el periodo seleccionado", status = status.HTTP_400_BAD_REQUEST)    
             return Response('faltan el nodo codigoperiodo/codigoinstitucioneducativa para buscar la cabecera',status = status.HTTP_400_BAD_REQUEST)
         return Response('falta el nodo modificacionproyeccionpresupuestalid para buscar la cabecera',status = status.HTTP_400_BAD_REQUEST)
-    else:
+    elif request.method =='GET': 
         modificacionproyeccionpresupuestalcabecera = buscarmodificacionproyeccionpresupuestalcabecera(request)
         if modificacionproyeccionpresupuestalcabecera:
             modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(modificacionproyeccionpresupuestalid = modificacionproyeccionpresupuestalcabecera.id).all()
             if modificacionproyeccionpresupuestaldetalle:
                 modificacionproyeccionpresupuestaldetalle_serializers = ModificacionproyeccionpresupuestaldetalleSerializers(modificacionproyeccionpresupuestaldetalle, many = True)
-                if request.method =='GET':                
-                    return Response(modificacionproyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
+                return Response(modificacionproyeccionpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)
         return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
+        
 @api_view(['GET','DELETE'])
 def modificacionproyeccionpresupuestaldetalle_id_api_view(request, id = None):    
     modificacionproyeccionpresupuestaldetalle = Modificacionproyeccionpresupuestaldetalle.objects.filter(id = id).first()

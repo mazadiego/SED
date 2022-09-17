@@ -35,7 +35,12 @@ class SolicitudpresupuestaldetalleSerializers(serializers.ModelSerializer):
 
         fuenterecurso = data['fuenterecursoid']
         rubropresupuestal = data['rubropresupuestalid']
-        solicitudpresupuestalcabecera = data['solicitudpresupuestalcabeceraid']           
+        solicitudpresupuestalcabecera = data['solicitudpresupuestalcabeceraid']  
+
+        if solicitudpresupuestalcabecera.estado != 'Procesado': 
+            raise serializers.ValidationError({
+                "Estado" : "No se puede agregar valores al documento en este estado"            
+            })         
         
         saldo = saldo_fuente_recaudos(solicitudpresupuestalcabecera.institucioneducativaid.id,fuenterecurso.id) - data['valor']
 

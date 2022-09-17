@@ -18,8 +18,9 @@ from apps.institucioneducativa.models import Institucioneducativa
 from apps.rubropresupuestal.api.api import buscar_rubro_cdp
 from apps.fuenterecurso.models import Fuenterecurso
 from apps.fuenterecurso.api.api import buscarfuenterecurso_final
+from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponibilidadpresupuestal
 
-@api_view(['GET','POST','DELETE'])
+@api_view(['GET','POST'])
 def solicitudpresupuestaldetalle_api_view(request):
     if request.method =='POST':
         solicitudpresupuestalcabecera = Solicitudpresupuestalcabecera()
@@ -67,29 +68,35 @@ def solicitudpresupuestaldetalle_api_view(request):
         solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(data=request.data)
         
         if solicitudpresupuestaldetalle_serializers.is_valid():
-            #return Response("Guardando Datos",status = status.HTTP_201_CREATED)
             solicitudpresupuestaldetalle_serializers.save()
             return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
         return Response(solicitudpresupuestaldetalle_serializers.errors,status = status.HTTP_400_BAD_REQUEST)
         
-        
-        
-    else: 
-             
+    elif request.method =='GET':              
         solicitudpresupuestal = buscarsolicitudpresupuestalconsecutivo(request)
         if solicitudpresupuestal: 
-            solicitudpresupuestaldetalle = buscarsolicitudpresupuestaldetalle(request,solicitudpresupuestal.id)
+            solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.filter( solicitudpresupuestalcabeceraid = solicitudpresupuestal.id).all() 
             if solicitudpresupuestaldetalle:
-                solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(solicitudpresupuestaldetalle)
-                if request.method =='GET':
-                    return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_201_CREATED)
-                elif request.method =='DELETE':
-                    #if buscar_rubro_cdp(solicitudpresupuestal.institucioneducativaid.id,solicitudpresupuestaldetalle.rubropresupuestalid.id)==False:
-                    solicitudpresupuestaldetalle.delete()
-                    return Response("Eliminado Correctamente",status = status.HTTP_201_CREATED)
-                    #return Response("no puede ser eliminado, rubro asociado esta asigando a un CDP",status = status.HTTP_400_BAD_REQUEST)
+                solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(solicitudpresupuestaldetalle, many = True)
+                return Response(solicitudpresupuestaldetalle_serializers.data,status = status.HTTP_200_OK)
             return Response("No existe registro para los datos ingresados",status = status.HTTP_400_BAD_REQUEST)   
         return Response("No existe registro cabecera para los datos ingresados",status = status.HTTP_400_BAD_REQUEST) 
+
+@api_view(['GET','DELETE'])
+def solicitudpresupuestaldetalle_id_api_view(request, id = None):    
+    solicitudpresupuestaldetalle = Solicitudpresupuestaldetalle.objects.filter(id= id).first()    
+    if solicitudpresupuestaldetalle:
+        if request.method =='GET':
+            solicitudpresupuestaldetalle_serializers = SolicitudpresupuestaldetalleSerializers(solicitudpresupuestaldetalle)
+            return Response(solicitudpresupuestaldetalle_serializers.data, status = status.HTTP_200_OK)
+        elif request.method == 'DELETE':
+            if solicitudpresupuestaldetalle.solicitudpresupuestalcabeceraid.estado == 'Procesado':                
+                if Certificadodisponibilidadpresupuestal.objects.filter(solicitudpresupuestalcabeceraid = solicitudpresupuestaldetalle.solicitudpresupuestalcabeceraid.id).count() == 0:
+                    solicitudpresupuestaldetalle.delete()
+                    return Response('Eliminado Correctamente', status= status.HTTP_200_OK)
+                return Response('No se puede se eliminado detalle documento relacionado a un CDP',status = status.HTTP_400_BAD_REQUEST)  
+            return Response('No se puede se eliminado detalle con documento en este Estado',status = status.HTTP_400_BAD_REQUEST)  
+    return Response('no Existe datos para el id seleccionado',status = status.HTTP_400_BAD_REQUEST)  
 
 def buscarsolicitudpresupuestaldetalle(request,solicitudpresupuestalid):
     parametros = dict(request.query_params)

@@ -3,15 +3,15 @@ from pyexpat import model
 from rest_framework import serializers
 from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponibilidadpresupuestal
 from apps.institucioneducativa.api.serializers import InstitucioneducativaSerializer
-from apps.rubropresupuestal.api.serializers import Rubropresupuestalserializers
-from apps.rubropresupuestal.api.api import saldo_rubro_solicitud,saldo_rubro_cdp,saldo_rubro_recaudos
 from apps.periodo.models import Periodo
+from apps.solicitudpresupuestalcabecera.api.api import saldosolicitud_por_cdp
+from apps.solicitudpresupuestalcabecera.api.serializers import SolicitudpresupuestalcabeceraSerializers
 
 class CertificadodisponibilidadpresupuestalSerializers(serializers.ModelSerializer):
 
     class Meta:
         model= Certificadodisponibilidadpresupuestal
-        fields=['id','institucioneducativaid','consecutivo','fecha','diasvalidez','rubropresupuestalid','observacion','valor']
+        fields=['id','institucioneducativaid','consecutivo','fecha','diasvalidez','observacion','valor','objeto','estado','solicitudpresupuestalcabeceraid']
 
     def validate_valor(selft,value):
         if value == None or value<=0:
@@ -28,7 +28,7 @@ class CertificadodisponibilidadpresupuestalSerializers(serializers.ModelSerializ
             raise serializers.ValidationError("No Exite un periodo abierto")
         
         return value
-
+    
     def validate(self, data):
         saldo = 0
         saldosolicitud = 0
@@ -37,39 +37,37 @@ class CertificadodisponibilidadpresupuestalSerializers(serializers.ModelSerializ
             raise serializers.ValidationError({
                 "institucioneducativaid": "falta el nodo institucioneducativaid."
             })
-        
-        if 'rubropresupuestalid' not in data.keys():
-            raise serializers.ValidationError({
-                "rubropresupuestalid": "falta el nodo  rubropresupuestalid."            
-            })
-        
         if 'valor' not in data.keys():
             raise serializers.ValidationError({
                 "valor": "falta el nodo  valor."            
             })
-        
-        
-        saldosolicitud = saldo_rubro_solicitud(data['institucioneducativaid'].id,data['rubropresupuestalid'].id)
-        saldocdp = saldo_rubro_cdp(data['institucioneducativaid'].id,data['rubropresupuestalid'].id)        
-        saldosrecaudos = saldo_rubro_recaudos(data['institucioneducativaid'].id,data['rubropresupuestalid'].id)
 
-        #saldo CDP vs los recuados por rubro presupuestal
-        saldo = saldosrecaudos - (saldocdp + data['valor'])
+        if 'solicitudpresupuestalcabeceraid' not in data.keys():
+            raise serializers.ValidationError({
+                "solicitudpresupuestalcabeceraid": "falta el nodo  solicitudpresupuestalcabeceraid."            
+            })
         
-        if saldo < 0:
-            raise serializers.ValidationError("El valor ingresado sobrepasa el saldo por recaudos del rubro presupuestal seleccionado")
+        solicitudpresupuestalcabecera = data['solicitudpresupuestalcabeceraid']
 
+        if solicitudpresupuestalcabecera.estado != 'Procesado':
+            raise serializers.ValidationError({
+                "solicitud presupuestal": "la solicitud debe tener estado Procesado para poder ser relacionada al documento CDP."            
+            })
+
+        saldo = saldosolicitud_por_cdp(solicitudpresupuestalcabecera) - data['valor']
         
-        #saldo CDP vs solicitud por rubro presupuestal
-        saldo = saldosolicitud - (saldocdp + data['valor'])
-        
+
         if saldo < 0:
-            raise serializers.ValidationError("El valor ingresado sobrepasa el saldo por soicitud del rubro presupuestal seleccionado")
-       
+            raise serializers.ValidationError({
+                "solicitud presupuestal": "El valor ingresado sobrepasa el saldo del docuemnto solicitud relacionado."            
+            })
+            
+        
         return data
 
     def to_representation(self, instance):
         cdp = super().to_representation(instance)
         cdp['institucioneducativaid']= InstitucioneducativaSerializer(instance.institucioneducativaid).data
-        cdp['rubropresupuestalid'] = Rubropresupuestalserializers(instance.rubropresupuestalid).data
+        cdp['solicitudpresupuestalcabeceraid']= SolicitudpresupuestalcabeceraSerializers(instance.solicitudpresupuestalcabeceraid).data
+        
         return cdp

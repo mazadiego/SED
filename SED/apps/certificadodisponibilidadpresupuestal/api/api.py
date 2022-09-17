@@ -1,3 +1,4 @@
+from pyexpat import model
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
@@ -6,12 +7,12 @@ from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponi
 from apps.certificadodisponibilidadpresupuestal.api.serializers import CertificadodisponibilidadpresupuestalSerializers
 from apps.periodo.models import Periodo
 from apps.institucioneducativa.models import Institucioneducativa
-from apps.rubropresupuestal.models import Rubropresupuestal
 from apps.consecutivo.api.api import consultarconsecutivo
 from apps.consecutivo.api.api import actualizarconsecutivo
 from django.db.models.deletion import RestrictedError
 from apps.registropresupuestal.models import Registropresupuestal
 from django.db.models import Count,Sum
+from apps.solicitudpresupuestalcabecera.models import Solicitudpresupuestalcabecera
 
 @api_view(['GET','POST'])
 def certificadodisponibilidadpresupuestal_api_view(request):  
@@ -22,9 +23,12 @@ def certificadodisponibilidadpresupuestal_api_view(request):
         return Response(certificadodisponibilidadpresupuestal.data,status = status.HTTP_200_OK)
     elif request.method =='POST':
         institucioneducativa = Institucioneducativa()
-        rubropresupuestal = Rubropresupuestal()
+        
         consecutivo = 0
-
+        consecutivosolicitud = 0
+        if 'estado' in request.data.keys():
+            request.data['estado'] = 'Procesado'
+            
         if 'institucioneducativaid' in request.data.keys():
             institucioneducativaid = request.data.pop('institucioneducativaid')
             if 'codigo' in institucioneducativaid.keys():
@@ -38,18 +42,19 @@ def certificadodisponibilidadpresupuestal_api_view(request):
         else:
             return Response("falta el nodo institucioneducativaid",status = status.HTTP_400_BAD_REQUEST) 
 
-        if 'rubropresupuestalid' in request.data.keys():
-            rubropresupuestalid = request.data.pop('rubropresupuestalid')
-            if 'codigo' in rubropresupuestalid.keys():
-                rubropresupuestal = Rubropresupuestal.objects.filter(codigo = rubropresupuestalid['codigo']).first() 
-                if rubropresupuestal:
-                    request.data.update({"rubropresupuestalid": rubropresupuestal.id})
+        if 'solicitudpresupuestalcabeceraid' in request.data.keys():
+            solicitudpresupuestalcabeceraid = request.data.pop('solicitudpresupuestalcabeceraid')
+            if 'consecutivo' in solicitudpresupuestalcabeceraid.keys():
+                solicitudpresupuestalcabecera = Solicitudpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativa.id, consecutivo = solicitudpresupuestalcabeceraid['consecutivo']).first() 
+                if solicitudpresupuestalcabecera:
+                    request.data.update({"solicitudpresupuestalcabeceraid": solicitudpresupuestalcabecera.id})
                 else:
-                    return Response("rubro presupuestal ingresado no existe",status = status.HTTP_400_BAD_REQUEST)                     
+                    return Response("solicitud presupuestal ingresada no existe",status = status.HTTP_400_BAD_REQUEST)                     
             else:
-                return Response("falta el nodo codigo para rubropresupuestal",status = status.HTTP_400_BAD_REQUEST)   
+                return Response("falta el nodo consecutivo para consultar solicitud presupuestal",status = status.HTTP_400_BAD_REQUEST)   
         else:
-            return Response("falta el nodo rubropresupuestalid",status = status.HTTP_400_BAD_REQUEST) 
+            return Response("falta el nodo solicitudpresupuestalcabeceraid",status = status.HTTP_400_BAD_REQUEST) 
+
 
         consecutivo = consultarconsecutivo(4,institucioneducativa.id)
         request.data['consecutivo'] = consecutivo
@@ -57,6 +62,7 @@ def certificadodisponibilidadpresupuestal_api_view(request):
         certificadodisponibilidadpresupuestal_Serializers = CertificadodisponibilidadpresupuestalSerializers(data = request.data)
 
         if certificadodisponibilidadpresupuestal_Serializers.is_valid(): 
+            #return Response('guradando documento',status = status.HTTP_201_CREATED) 
             certificadodisponibilidadpresupuestal_Serializers.save()
             actualizarconsecutivo(4,institucioneducativa.id,consecutivo)
             return Response(certificadodisponibilidadpresupuestal_Serializers.data,status = status.HTTP_201_CREATED)        
@@ -70,11 +76,16 @@ def certificadodisponibilidadpresupuestal_consecutivo_api_view(request):
             certificadodisponibilidadpresupuestal_serializers = CertificadodisponibilidadpresupuestalSerializers(certificadodisponibilidadpresupuestal)
             return Response(certificadodisponibilidadpresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            try:
-                certificadodisponibilidadpresupuestal.delete()
-                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('CDP no puede ser eliminado esta asociado a un Registro Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
+            if certificadodisponibilidadpresupuestal.estado =='Procesado':
+                certificadodisponibilidadpresupuestal.estado ='Anulado'
+                certificadodisponibilidadpresupuestal.save()
+                return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
+                #try:
+                #    certificadodisponibilidadpresupuestal.delete()
+                #    return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
+                #except RestrictedError:
+                #    return Response('CDP no puede ser eliminado esta asociado a un Registro Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
+            return Response('CDP no puede ser eliminado en este Estado',status = status.HTTP_400_BAD_REQUEST)
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
         
 
