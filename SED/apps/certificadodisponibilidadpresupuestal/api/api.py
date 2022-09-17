@@ -25,7 +25,7 @@ def certificadodisponibilidadpresupuestal_api_view(request):
         institucioneducativa = Institucioneducativa()
         
         consecutivo = 0
-        consecutivosolicitud = 0
+        
         if 'estado' in request.data.keys():
             request.data['estado'] = 'Procesado'
             
@@ -62,7 +62,6 @@ def certificadodisponibilidadpresupuestal_api_view(request):
         certificadodisponibilidadpresupuestal_Serializers = CertificadodisponibilidadpresupuestalSerializers(data = request.data)
 
         if certificadodisponibilidadpresupuestal_Serializers.is_valid(): 
-            #return Response('guradando documento',status = status.HTTP_201_CREATED) 
             certificadodisponibilidadpresupuestal_Serializers.save()
             actualizarconsecutivo(4,institucioneducativa.id,consecutivo)
             return Response(certificadodisponibilidadpresupuestal_Serializers.data,status = status.HTTP_201_CREATED)        
@@ -80,7 +79,7 @@ def certificadodisponibilidadpresupuestal_consecutivo_api_view(request):
                 certificadodisponibilidadpresupuestal.estado ='Anulado'
                 certificadodisponibilidadpresupuestal.save()
                 return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
-                #try:
+                #try: falata validar que no este asociado a un registro presupuestal 
                 #    certificadodisponibilidadpresupuestal.delete()
                 #    return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
                 #except RestrictedError:
