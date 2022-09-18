@@ -106,16 +106,14 @@ def registropresupuestal_consecutivo_api_view(request):
             registropresupuestal_serializers = Registropresupuestalserializers(registropresupuestal)
             return Response(registropresupuestal_serializers.data,status = status.HTTP_200_OK)
         elif request.method == 'DELETE': 
-            if registropresupuestal.estado == 'Procesado': 
-                registropresupuestal.estado = 'Anulado'          
-                registropresupuestal.save()
-                return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
-                #try: falata verificar si esta asociado a una OP procesado
-                #    registropresupuestal.delete()
-                #    return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-                #except RestrictedError:
-                #    return Response('RP no puede ser eliminado esta asociado a un Obligacion Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
-            return Response('RP no puede ser eliminado en este Estado',status = status.HTTP_400_BAD_REQUEST)
+            if Obligacionpresupuestal.objects.filter(registropresupuestalid = registropresupuestal.id, estado ='Procesado').count() == 0:
+                if registropresupuestal.estado == 'Procesado': 
+                    registropresupuestal.estado = 'Anulado'          
+                    registropresupuestal.save()
+                    return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)                    
+                return Response('RP no puede ser eliminado en este Estado',status = status.HTTP_400_BAD_REQUEST)
+            return Response('RP no puede ser eliminado esta asociado a un Obligacion Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
+            
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
 
 def buscar_rp_consecutivo(request):
@@ -170,7 +168,7 @@ def saldo_rp_por_op(rpid):
     rp = Registropresupuestal.objects.filter(id=rpid).first()
     if rp:
         totalrp = rp.valor
-        op = Obligacionpresupuestal.objects.filter(registropresupuestalid = rp.id).values('registropresupuestalid').annotate(total=Sum('valor'))
+        op = Obligacionpresupuestal.objects.filter(registropresupuestalid = rp.id, estado ='Procesado').values('registropresupuestalid').annotate(total=Sum('valor'))
         if op:
             totalop = op[0]['total']
 

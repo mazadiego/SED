@@ -11,7 +11,7 @@ from apps.registropresupuestal.api.api import saldo_rp_por_op
 class ObligacionpresupuestalSerializers(serializers.ModelSerializer):
     class Meta: 
         model=Obligacionpresupuestal
-        fields=['institucioneducativaid','consecutivo','fecha','recibosatisfacion','observacion','registropresupuestalid','valor']
+        fields=['institucioneducativaid','consecutivo','fecha','recibosatisfacion','observacion','registropresupuestalid','valor','objeto','estado']
         
 
     def validate_valor(selft,value):        
@@ -41,10 +41,21 @@ class ObligacionpresupuestalSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "registropresupuestalid": "falta el nodo  registropresupuestalid."            
             })
-        saldocdp = saldo_rp_por_op(data['registropresupuestalid'].id) - data['valor']
+
+        registropresupuestal = data['registropresupuestalid']
+
+        if registropresupuestal.estado != 'Procesado':
+            raise serializers.ValidationError({
+                "estado":" el RP debe tener estado procesado para poder ser relacionado a una Obligacion Presupuestal"
+            }
+            )
+            
+        saldocdp = saldo_rp_por_op(registropresupuestal.id) - data['valor']
 
         if saldocdp < 0:
-            raise serializers.ValidationError("El valor ingresado sobrepasa el saldo del RP expedido")
+            raise serializers.ValidationError({
+                "Registro Presupuestal":"El valor ingresado sobrepasa el saldo del RP expedido"
+                })
 
         return data
 

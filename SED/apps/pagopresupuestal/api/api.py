@@ -26,6 +26,9 @@ def pagopresupuestal_api_view(request):
         opresu = Obligacionpresupuestal()
         consecutivo = 0
         consecutivoopresu = 0
+
+        if 'estado' in request.data.keys():
+            request.data['estado'] = 'Procesado'
         
         if 'institucioneducativaid' in request.data.keys():
             institucioneducativaid = request.data.pop('institucioneducativaid')
@@ -73,9 +76,12 @@ def pagopresupuestal_consecutivo_api_view(request):
         if request.method =='GET': 
             pagopresupuestal_serializers = PagopresupuestalSerializers(pagopresupuestal)
             return Response(pagopresupuestal_serializers.data,status = status.HTTP_200_OK)
-        elif request.method == 'DELETE':          
-            pagopresupuestal.delete()
-            return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)            
+        elif request.method == 'DELETE': 
+            if  pagopresupuestal.estado == 'Procesado':
+                pagopresupuestal.estado = 'Anulado'
+                pagopresupuestal.save()
+                return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)  
+            return Response('Pago Presupuestal no puede ser eliminado en este Estado',status = status.HTTP_400_BAD_REQUEST)           
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
 
 def buscar_pagopresu_consecutivo(request):

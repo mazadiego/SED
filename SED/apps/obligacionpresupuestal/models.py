@@ -11,6 +11,8 @@ class Obligacionpresupuestal(models.Model):
     registropresupuestalid = models.ForeignKey(Registropresupuestal,on_delete=models.RESTRICT)
     observacion = models.CharField(max_length=500,null=False)
     valor = models.DecimalField(max_digits=18,decimal_places=6,null=False)
+    objeto = models.CharField(max_length=5000, null=False,default='')
+    estado = models.CharField(max_length=50, null=False,default='Procesado')
 
     class Meta:
         constraints = [
@@ -18,5 +20,5 @@ class Obligacionpresupuestal(models.Model):
         ]
     
     def __str__(self):
-        return f'{self.institucioneducativaid} {self.consecutivo} {self.fecha} {self.recibosatisfacion} {self.observacion} {self.registropresupuestalid} {self.valor}'
+        return f'{self.institucioneducativaid} {self.consecutivo} {self.fecha} {self.recibosatisfacion} {self.observacion} {self.registropresupuestalid} {self.valor} {self.objeto} {self.estado}'
 

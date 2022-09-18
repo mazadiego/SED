@@ -29,7 +29,9 @@ def obligacionpresupuestal_api_view(request):
         rp = Registropresupuestal()
         consecutivo = 0
         consecutivorp = 0
-        
+        if 'estado' in request.data.keys():
+            request.data['estado'] = 'Procesado'
+
         if 'institucioneducativaid' in request.data.keys():
             institucioneducativaid = request.data.pop('institucioneducativaid')
             if 'codigo' in institucioneducativaid.keys():
@@ -76,13 +78,14 @@ def obligacionpresupuestal_consecutivo_api_view(request):
         if request.method =='GET': 
             obligacionpresupuestal_serializers = ObligacionpresupuestalSerializers(obligacionpresupuestal)
             return Response(obligacionpresupuestal_serializers.data,status = status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            
-            try:
-                obligacionpresupuestal.delete()
-                return Response('Documento Eliminado Correctamente',status = status.HTTP_200_OK)
-            except RestrictedError:
-                return Response('RP no puede ser eliminado esta asociado a un Pago Presupuestal',status = status.HTTP_400_BAD_REQUEST)            
+        elif request.method == 'DELETE': 
+            if Pagopresupuestal.objects.filter(obligacionpresupuestalid = obligacionpresupuestal.id, estado = 'Procesado').count()==0:
+                if obligacionpresupuestal.estado == 'Procesado':
+                    obligacionpresupuestal.estado = 'Anulado'
+                    obligacionpresupuestal.save()
+                    return Response('Documento Anulado Correctamente',status = status.HTTP_200_OK)
+                return Response('Obligacion Presupuestal no puede ser eliminada en este Estado',status = status.HTTP_400_BAD_REQUEST) 
+            return Response('Obligacion Presupuestal no puede ser eliminado esta asociado a un Pago Presupuestal',status = status.HTTP_400_BAD_REQUEST)           
     return Response('Documento no exite',status = status.HTTP_400_BAD_REQUEST) 
 
 def buscar_op_consecutivo(request):
@@ -137,7 +140,7 @@ def saldo_opresu_por_pagopresu(opresuid):
     opresu = Obligacionpresupuestal.objects.filter(id=opresuid).first()
     if opresu:
         totalopresu = opresu.valor
-        pagopresu = Pagopresupuestal.objects.filter(obligacionpresupuestalid = opresu.id).values('obligacionpresupuestalid').annotate(total=Sum('valor'))
+        pagopresu = Pagopresupuestal.objects.filter(obligacionpresupuestalid = opresu.id, estado = 'Procesado').values('obligacionpresupuestalid').annotate(total=Sum('valor'))
         if pagopresu:
             totalpagopresu = pagopresu[0]['total']
 

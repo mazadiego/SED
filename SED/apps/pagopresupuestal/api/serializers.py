@@ -11,7 +11,7 @@ from apps.obligacionpresupuestal.api.api import saldo_opresu_por_pagopresu
 class PagopresupuestalSerializers(serializers.ModelSerializer):
     class Meta: 
         model=Pagopresupuestal
-        fields=['institucioneducativaid','consecutivo','fecha','observacion','obligacionpresupuestalid','valor']
+        fields=['institucioneducativaid','consecutivo','fecha','observacion','obligacionpresupuestalid','valor','objeto','estado']
         
 
     def validate_valor(selft,value):        
@@ -41,10 +41,22 @@ class PagopresupuestalSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "obligacionpresupuestalid": "falta el nodo  obligacionpresupuestalid."            
             })
-        saldocdp = saldo_opresu_por_pagopresu(data['obligacionpresupuestalid'].id) - data['valor']
+            
+        obligacionpresupuestal = data['obligacionpresupuestalid']
+
+        if obligacionpresupuestal.estado != 'Procesado':
+            raise serializers.ValidationError({
+                "estado":" la Obligacion Presupuestal debe tener estado procesado para poder ser relacionado a un pago presupuestal."
+            }
+            )
+
+        saldocdp = saldo_opresu_por_pagopresu(obligacionpresupuestal.id) - data['valor']
 
         if saldocdp < 0:
-            raise serializers.ValidationError("El valor ingresado sobrepasa el saldo de la obligacion presupuestal expedida")
+            raise serializers.ValidationError({
+                "Obligacion Presupuestal":"El valor ingresado sobrepasa el saldo de la obligacion presupuestal expedida"
+                }
+            )
 
         return data
 
