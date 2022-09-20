@@ -18,6 +18,11 @@ class CertificadodisponibilidadpresupuestalSerializers(serializers.ModelSerializ
             raise serializers.ValidationError("Debe ingresar un valor mayor que cero (0)")
         return value
 
+    def validate_diasvalidez(selft,value):
+        if value == None or value<=0:
+            raise serializers.ValidationError("Debe ingresar un valor mayor que cero (0)")
+        return value
+
     def validate_fecha(selft,value):
         periodo = Periodo.objects.filter(activo = True).first()
 
