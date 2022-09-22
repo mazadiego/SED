@@ -10,7 +10,7 @@ class Registropresupuestal(models.Model):
     consecutivo = models.PositiveIntegerField(null=False)
     fecha = models.DateField(null=False)
     terceroid = models.ForeignKey(Tercero, on_delete= models.RESTRICT)
-    observacion = models.CharField(max_length=500,null=False)
+    observacion = models.CharField(max_length=500,null=True,blank=True)
     certificadodisponibilidadpresupuestalid = models.ForeignKey(Certificadodisponibilidadpresupuestal,on_delete=models.RESTRICT)
     valor = models.DecimalField(max_digits=18,decimal_places=6,null=False)
     objeto = models.CharField(max_length=5000, null=False,default='')
