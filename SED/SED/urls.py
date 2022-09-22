@@ -20,6 +20,9 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from django.conf import settings
+from django.views.static import serve
+
 schema_view = get_schema_view(
    openapi.Info(
       title="SED API",
@@ -60,4 +63,11 @@ urlpatterns = [
     path('pagopresupuestal/',include('apps.pagopresupuestal.api.urls')),
     path('modificacionproyeccionpresupuestalcabecera/',include('apps.modificacionproyeccionpresupuestalcabecera.api.urls')),
     path('modificacionproyeccionpresupuestaldetalle/',include('apps.modificacionproyeccionpresupuestaldetalle.api.urls')),
+    path('adjuntos/',include('apps.adjuntos.api.urls')),
+]
+
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$',serve,{
+        'document_root': settings.MEDIA_ROOT,
+    })
 ]

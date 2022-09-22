@@ -96,3 +96,26 @@ Correcciones
 Correcciones CDP
 -El campo dias de validez obligatoriamente debe ser mayor que cero [PENDIENTE]
 -Falta metodo PUT, OJO tener en cuantas las validaciones del valor vs el saldo [PENDIENTE]
+
+adjunto PDF
+adjuntos instalar lasisguiente librerias
+pip install drf-extra-fields
+pip install Pillow
+pip install filetype
+
+{
+	"institucioneducativaid": {
+			"codigo": "03"
+		},
+	"tipodocumento":1,
+	"consecutivo":2,
+	"nombrearchivo":"archivo.pdf",
+	"archivobase64":""
+}
+
+metodos 
+http://127.0.0.1:8000/adjuntos/?codigoinstitucioneducativa=03 devuelve todos los adjuntos por institucion educativa
+
+http://127.0.0.1:8000/adjuntos/id/5 devuelve un id de adjunto seleccionado para eliminarlo
+
+http://127.0.0.1:8000/adjuntos/descargar/4 devuelve un id de adjunto seleccionado en formato base64 
