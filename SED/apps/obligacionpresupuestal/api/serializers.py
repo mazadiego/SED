@@ -19,6 +19,11 @@ class ObligacionpresupuestalSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError("Debe ingresar un valor mayor que cero (0)")
         return value
     
+    def validate_objeto(selft,value):  
+        if value == None or value =="":
+            raise serializers.ValidationError({"objeto":"debe ingresar un valor"})
+        return value
+    
     def validate_fecha(selft,value):
         periodo = Periodo.objects.filter(activo = True).first()
 
@@ -35,6 +40,11 @@ class ObligacionpresupuestalSerializers(serializers.ModelSerializer):
         if 'valor' not in data.keys():
             raise serializers.ValidationError({
                 "valor": "falta el nodo  valor."            
+            })
+
+        if 'objeto' not in data.keys():
+            raise serializers.ValidationError({
+                "objeto": "falta el nodo  objeto."            
             })
         
         if 'registropresupuestalid' not in data.keys():

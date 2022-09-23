@@ -36,6 +36,11 @@ class PagopresupuestalSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "valor": "falta el nodo  valor."            
             })
+
+        if 'objeto' not in data.keys():
+            raise serializers.ValidationError({
+                "objeto": "falta el nodo  objeto."            
+        })
         
         if 'obligacionpresupuestalid' not in data.keys():
             raise serializers.ValidationError({
