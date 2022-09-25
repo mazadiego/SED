@@ -132,6 +132,18 @@ tipos de documento
 9-Modificacion Presupuestal 
 
 audtioria metodos
+
+{"auditoriaa"}
+	{
+	"institucioneducativaid": {
+			"codigo": "03"
+		},	
+	"usuarioid": {
+			"codigo": "01"
+		}
+		
+	}
+	
 http://127.0.0.1:8000/auditorinstitucioneducativa/usuario/01/ devuelve configuracion por usuarios
 
 http://127.0.0.1:8000/auditorinstitucioneducativa/listarusuariossinrelacion/ devuleve los usaurios que nos estan asociados a una institucion educativa
