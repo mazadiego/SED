@@ -64,6 +64,7 @@ urlpatterns = [
     path('modificacionproyeccionpresupuestalcabecera/',include('apps.modificacionproyeccionpresupuestalcabecera.api.urls')),
     path('modificacionproyeccionpresupuestaldetalle/',include('apps.modificacionproyeccionpresupuestaldetalle.api.urls')),
     path('adjuntos/',include('apps.adjuntos.api.urls')),
+    path('auditorinstitucioneducativa/',include('apps.auditorinstitucioneducativa.api.urls')),
 ]
 
 urlpatterns += [

@@ -130,3 +130,10 @@ tipos de documento
 7-PP 
 8-proyeccion presupuestal 
 9-Modificacion Presupuestal 
+
+audtioria metodos
+http://127.0.0.1:8000/auditorinstitucioneducativa/usuario/01/ devuelve configuracion por usuarios
+
+http://127.0.0.1:8000/auditorinstitucioneducativa/listarusuariossinrelacion/ devuleve los usaurios que nos estan asociados a una institucion educativa
+
+http://127.0.0.1:8000/auditorinstitucioneducativa/id/2/ devuleve una configuracion para ser eliminada

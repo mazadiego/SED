@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'apps.modificacionproyeccionpresupuestalcabecera.apps.ModificacionproyeccionpresupuestalcabeceraConfig',
     'apps.modificacionproyeccionpresupuestaldetalle.apps.ModificacionproyeccionpresupuestaldetalleConfig',
     'apps.adjuntos.apps.AdjuntosConfig',
+    'apps.auditorinstitucioneducativa.apps.AuditorinstitucioneducativaConfig',
 ]
 
 MIDDLEWARE = [
