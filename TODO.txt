@@ -114,8 +114,19 @@ pip install filetype
 }
 
 metodos 
-http://127.0.0.1:8000/adjuntos/?codigoinstitucioneducativa=03 devuelve todos los adjuntos por institucion educativa
+http://127.0.0.1:8000/adjuntos/?codigoinstitucioneducativa=03&tipo=1&documnetoid=3 devuelve todos los adjuntos por documento
 
 http://127.0.0.1:8000/adjuntos/id/5 devuelve un id de adjunto seleccionado para eliminarlo
 
 http://127.0.0.1:8000/adjuntos/descargar/4 devuelve un id de adjunto seleccionado en formato base64 
+
+tipos de documento
+1-Ingreso Presupuestal
+2-Recaudo Presupuestal
+3-Solicitud Presupuestal
+4-CDP
+5-RP
+6-OP 
+7-PP 
+8-proyeccion presupuestal 
+9-Modificacion Presupuestal 

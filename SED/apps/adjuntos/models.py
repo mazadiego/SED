@@ -4,9 +4,9 @@ from apps.institucioneducativa.models import Institucioneducativa
 # Create your models here.
 
 class Adjuntos(models.Model):
-    tipodocumento = models.IntegerField(null=False)
+    tipo = models.IntegerField(null=False)
     institucioneducativaid = models.ForeignKey(Institucioneducativa, on_delete=models.RESTRICT)
-    consecutivo = models.PositiveIntegerField(null=False)
+    documnetoid = models.PositiveIntegerField(null=False)
     nombrearchivo = models.CharField(max_length=500,null=False)
     archivobase64 = models.FileField(blank=False,null=False,upload_to='files/')
 

@@ -14,7 +14,8 @@ def adjuntos_api_view(request):
         institucioneducativaid = 0
         codigoinstitucioneducativa = ""
         parametros = dict(request.query_params)
-
+        tipo = 0
+        documnetoid = 0
         if 'codigoinstitucioneducativa' in parametros.keys():
             codigoinstitucioneducativa = str(parametros["codigoinstitucioneducativa"][0])
             codigoinstitucioneducativa = codigoinstitucioneducativa.upper() 
@@ -24,7 +25,14 @@ def adjuntos_api_view(request):
         if institucioneducativa:            
            institucioneducativaid = institucioneducativa.id
 
-        adjuntos = Adjuntos.objects.filter(institucioneducativaid = institucioneducativaid).all()
+        if 'tipo' in parametros.keys():
+            tipo = str(parametros["tipo"][0])
+
+        if 'documnetoid' in parametros.keys():
+            documnetoid = str(parametros["documnetoid"][0])
+             
+
+        adjuntos = Adjuntos.objects.filter(institucioneducativaid = institucioneducativaid, tipo = tipo , documnetoid = documnetoid).all()
 
         if adjuntos:
             adjuntos_serializer = AdjuntosSerializers (adjuntos, many = True)       
