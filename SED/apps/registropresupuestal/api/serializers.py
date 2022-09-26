@@ -15,7 +15,7 @@ class Registropresupuestalserializers(serializers.ModelSerializer):
 
     class Meta: 
         model=Registropresupuestal
-        fields=['institucioneducativaid','consecutivo','fecha','terceroid','observacion','certificadodisponibilidadpresupuestalid','valor','objeto','estado','tipocontratoid','fechainiciocontrato','fechafincontrato','contratonumero']
+        fields=['id','institucioneducativaid','consecutivo','fecha','terceroid','observacion','certificadodisponibilidadpresupuestalid','valor','objeto','estado','tipocontratoid','fechainiciocontrato','fechafincontrato','contratonumero']
 
     def validate_valor(selft,value):        
         if value == None or value<=0:
