@@ -11,7 +11,7 @@ from apps.obligacionpresupuestal.api.api import saldo_opresu_por_pagopresu
 class PagopresupuestalSerializers(serializers.ModelSerializer):
     class Meta: 
         model=Pagopresupuestal
-        fields=['institucioneducativaid','consecutivo','fecha','observacion','obligacionpresupuestalid','valor','objeto','estado']
+        fields=['id','institucioneducativaid','consecutivo','fecha','observacion','obligacionpresupuestalid','valor','objeto','estado']
         
 
     def validate_valor(selft,value):        

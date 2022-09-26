@@ -11,7 +11,7 @@ from apps.registropresupuestal.api.api import saldo_rp_por_op
 class ObligacionpresupuestalSerializers(serializers.ModelSerializer):
     class Meta: 
         model=Obligacionpresupuestal
-        fields=['institucioneducativaid','consecutivo','fecha','recibosatisfacion','observacion','registropresupuestalid','valor','objeto','estado']
+        fields=['id','institucioneducativaid','consecutivo','fecha','recibosatisfacion','observacion','registropresupuestalid','valor','objeto','estado']
         
 
     def validate_valor(selft,value):        
