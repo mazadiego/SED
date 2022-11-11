@@ -4,5 +4,5 @@ from apps.institucioneducativa.api.api import institucioneducativa_api_view, ins
 urlpatterns = [
     path("",institucioneducativa_api_view, name= "institucioneducativa_api"),
     path("<str:codigo>/",institucioneducativa_details_api_view, name= "institucioneducativa_details_api"), 
-    path("usuario/<str:codigo>/",institucioneducativa_usuario_details_api_view, name= "institucioneducativa_usuario_details_api")
+    path("usuario/<str:username>/",institucioneducativa_usuario_details_api_view, name= "institucioneducativa_usuario_details_api")
 ]

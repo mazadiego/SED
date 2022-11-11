@@ -23,6 +23,11 @@ from drf_yasg import openapi
 from django.conf import settings
 from django.views.static import serve
 
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
 schema_view = get_schema_view(
    openapi.Info(
       title="SED API",
@@ -65,6 +70,9 @@ urlpatterns = [
     path('modificacionproyeccionpresupuestaldetalle/',include('apps.modificacionproyeccionpresupuestaldetalle.api.urls')),
     path('adjuntos/',include('apps.adjuntos.api.urls')),
     path('auditorinstitucioneducativa/',include('apps.auditorinstitucioneducativa.api.urls')),
+    path('user/',include('apps.user.api.urls')),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 urlpatterns += [

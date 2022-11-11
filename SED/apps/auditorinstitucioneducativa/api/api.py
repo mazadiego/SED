@@ -2,17 +2,17 @@ from typing import Any
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from apps.usuario.models import Usuario
+from apps.user.models import User
 from apps.institucioneducativa.models import Institucioneducativa
 from apps.auditorinstitucioneducativa.models import Auditoriainstitucioneducativa
 from apps.auditorinstitucioneducativa.api.serializers import AuditoriainstitucioneducativaSerializer
 from django.db.utils import IntegrityError
-from apps.usuario.api.serializers import UsuarioSerializer
+from apps.user.api.serializers import UserListSerializer
 
 @api_view(['GET','POST'])
-def auditoriainstitucioneducativa_api_view(request, codigousuario = None):
+def auditoriainstitucioneducativa_api_view(request, username = None):
     if request.method == 'GET':
-        auditoriainstitucioneducativa = Auditoriainstitucioneducativa.objects.filter(usuarioid__codigo = codigousuario).all()
+        auditoriainstitucioneducativa = Auditoriainstitucioneducativa.objects.filter(usuarioid__username = username).all()
         if auditoriainstitucioneducativa:
             auditoriainstitucioneducativa_serializers = AuditoriainstitucioneducativaSerializer(auditoriainstitucioneducativa, many = True)
             return Response(auditoriainstitucioneducativa_serializers.data,status = status.HTTP_200_OK)
@@ -35,14 +35,14 @@ def auditoriainstitucioneducativa_api_view(request, codigousuario = None):
 
         if 'usuarioid' in request.data.keys():
             usuarioid = request.data.pop('usuarioid')
-            if 'codigo' in usuarioid.keys():
-                usuario = Usuario.objects.filter(codigo = usuarioid['codigo']).first() 
+            if 'username' in usuarioid.keys():
+                usuario = User.objects.filter(username = usuarioid['username']).first() 
                 if usuario:
                     request.data.update({"usuarioid": usuario.id})
                 else:
                     return Response("usuario no existe",status = status.HTTP_400_BAD_REQUEST)                     
             else:
-                return Response("falta el nodo codigo para usuario",status = status.HTTP_400_BAD_REQUEST)   
+                return Response("falta el nodo username para usuario",status = status.HTTP_400_BAD_REQUEST)   
         else:
             return Response("falta el nodo usuarioid",status = status.HTTP_400_BAD_REQUEST) 
 
@@ -73,7 +73,7 @@ def auditoriainstitucioneducativa_id_api_view(request, id = None):
 @api_view(['GET'])
 def auditoriainstitucioneducativa_usuarios_api_view(request):
     if request.method == 'GET': 
-        usuarios = Usuario.objects.exclude(codigo ='admin').all()
+        usuarios = User.objects.all() #User.objects.exclude(codigo ='admin').all()
         list_usuarios = [usuario for usuario in usuarios if Institucioneducativa.objects.filter(usuarioid = usuario.id).count()==0]        
-        usuarioserializer = UsuarioSerializer(list_usuarios, many=True)
+        usuarioserializer = UserListSerializer(list_usuarios, many=True)
         return Response(usuarioserializer.data,status = status.HTTP_200_OK)

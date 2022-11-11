@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.institucioneducativa.models import Institucioneducativa
-from apps.usuario.api.serializers import UsuarioSerializer
+from apps.user.api.serializers import UserListSerializer
 
 class InstitucioneducativaSerializer(serializers.ModelSerializer):
     
@@ -12,6 +12,6 @@ class InstitucioneducativaSerializer(serializers.ModelSerializer):
    
     def to_representation(self, instance):
        institucioneducativa = super().to_representation(instance)
-       institucioneducativa['usuarioid'] = UsuarioSerializer(instance.usuarioid).data
+       institucioneducativa['usuarioid'] = UserListSerializer(instance.usuarioid).data
        return institucioneducativa  
     

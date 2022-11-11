@@ -1,11 +1,11 @@
 from django.db import models
 from apps.institucioneducativa.models import Institucioneducativa
-from apps.usuario.models import Usuario
+from apps.user.models import User
 # Create your models here.
 
 class Auditoriainstitucioneducativa(models.Model):
     institucioneducativaid = models.ForeignKey(Institucioneducativa,on_delete=models.RESTRICT)
-    usuarioid = models.ForeignKey(Usuario,on_delete=models.RESTRICT)
+    usuarioid = models.ForeignKey(User,on_delete=models.RESTRICT)
 
     class Meta:
         constraints = [

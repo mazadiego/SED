@@ -149,3 +149,102 @@ http://127.0.0.1:8000/auditorinstitucioneducativa/usuario/01/ devuelve configura
 http://127.0.0.1:8000/auditorinstitucioneducativa/listarusuariossinrelacion/ devuleve los usaurios que nos estan asociados a una institucion educativa
 
 http://127.0.0.1:8000/auditorinstitucioneducativa/id/2/ devuleve una configuracion para ser eliminada
+
+
+modificaciones para el manejo de usuario y Token para inicio de sesion 
+
+instalar postgresql-15.0-2-windows-x64.exe
+
+isntalar en el puerto por default :5432
+usaurio por defecto:postgres
+password: sed123*
+
+luego crear una base de datois con el siguiente nommbre SED
+
+ejecutar la intalacion de el archivo requirements.txt para instalar las nuevas dependencias para la conexion con postgrest y el manejo del Token
+
+luego ejecutar la migraciones para que el sistema cree la nueva base datos y el nuevo modelo usaurio 
+
+url para solictar el token 
+http://127.0.0.1:8000/api/token/
+json
+{
+    "username": "dmaza",
+    "password": "sed123456*"
+}
+
+
+el sistema devuelve 
+
+{
+    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY2ODI4Mjk3MSwiaWF0IjoxNjY4MTk2NTcxLCJqdGkiOiJhY2E4NTExN2JmNmE0MTZjYTRhMWY0Njc5YTQ2NjhiZiIsInVzZXJfaWQiOjF9.MXF3GDdEDG86h63xmh7qoN0tVNECRgGeM561XQsPh2o",
+    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjcwNzg4NTcxLCJpYXQiOjE2NjgxOTY1NzEsImp0aSI6IjA5ZjY0ZjNiYzYzMDQ4NTg5MzljZWQ2NTg3Y2Y5OWM1IiwidXNlcl9pZCI6MX0.Ni8IyQ18U2gq7PnGISCuVKFz8nkc8LBlVU_Ap9A5Cls"
+}
+
+el token de acceso es el que esta en el nodo   "access":
+
+este nodo ahora se debe envia en todas la peticiones en el header de la cabecera de la siguiente forma
+una key Authorization
+con value 
+
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjcwNzg4NTcxLCJpYXQiOjE2NjgxOTY1NzEsImp0aSI6IjA5ZjY0ZjNiYzYzMDQ4NTg5MzljZWQ2NTg3Y2Y5OWM1IiwidXNlcl9pZCI6MX0.Ni8IyQ18U2gq7PnGISCuVKFz8nkc8LBlVU_Ap9A5Cls
+
+Bearer este valo siempre va luego un espacion con el token de acceso
+
+
+ruta del nuevo modelo usaurio 
+
+http://127.0.0.1:8000/user/ obtiene el listado de todos los usuarios
+
+el json de usuario ahora es de la siguiente forma 
+
+ {
+        "id": 1,
+        "password": "pbkdf2_sha256$320000$kGKtn7eiaW1gSIx9HYYSUB$JefuZKgt1FjI8X1oIZW/3U+0wEWCuG/PCUq4pCc3DM4=",
+        "last_login": "2022-11-10T14:37:32.357493Z",
+        "is_superuser": true,
+        "username": "dmaza",
+        "name": "diego maza",
+        "last_name": "maza",
+        "is_active": true,
+        "is_staff": true,
+        "groups": [],
+        "user_permissions": []
+    }
+
+	campos obligatorios son 
+
+	 {
+        "id": 1,
+        "username": "dmaza",
+        "password":"*******"
+    }
+
+http://127.0.0.1:8000/user/[username] obtiene el valor de un usuario especifico
+
+
+nuevo json  para crear institucioneducativa
+
+{
+        "id": 4,
+        "codigo": "0001",
+        "nombre": "SOLEDAD ACOSTA DE SAMPER",
+        "usuarioid": {
+            
+            "username": "vale"
+           
+    }
+nuevo json  para crear auditoria
+{
+	"institucioneducativaid": {
+			"codigo": "0001"
+		},	
+	"usuarioid": {
+			"username": "dmaza"
+		}
+		
+	}
+
+
+
+
