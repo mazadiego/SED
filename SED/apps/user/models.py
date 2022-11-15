@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
     def create_user(self, username, name,last_name, password=None, **extra_fields):
         return self._create_user(username, name,last_name, password, False, False, **extra_fields)
 
-    def create_superuser(self, username, name,last_name, password=None, **extra_fields):
+    def create_superuser(self, username, name,last_name=None, password=None, **extra_fields):
         return self._create_user(username, name,last_name, password, True, True, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
