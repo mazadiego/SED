@@ -245,6 +245,22 @@ nuevo json  para crear auditoria
 		
 	}
 
+se agrega campo rol al modelo user por default se crean los usuarios con rol Institucion
+existen 3 valores validos 
+"Debe ingresar un Rol Valido ('Admin','Institucion','Auditor')"
+
+{
+        "id": 2,
+        "username": "vale",
+        "name": "valeria",
+        "last_name": "maza",
+        "is_active": true,
+        "is_staff": true,
+        "rol": "Institucion"
+    },
+
+	
+
 
 
 

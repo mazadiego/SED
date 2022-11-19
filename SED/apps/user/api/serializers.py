@@ -5,8 +5,13 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id','username', 'name', 'last_name','is_active','is_staff','password']
-        
+        fields = ['id','username', 'name', 'last_name','is_active','is_staff','password','rol']
+
+
+    def validate_rol(self, value):
+        if value == None or value == "" or value not in ['Admin','Institucion','Auditor']:
+            raise serializers.ValidationError("Debe ingresar un Rol Valido ('Admin','Institucion','Auditor')")
+        return value 
 
     def create(self,validated_data):
         user = User(**validated_data)
@@ -24,4 +29,4 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id','username', 'name', 'last_name','is_active','is_staff']
+        fields = ['id','username', 'name', 'last_name','is_active','is_staff','rol']

@@ -29,6 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
     objects = UserManager()
+    rol = models.CharField('Rol del Usuario', max_length = 255, blank = True, null = True, default='Institucion')
 
     class Meta:
         verbose_name = 'Usuario'
