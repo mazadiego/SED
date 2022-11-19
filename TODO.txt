@@ -246,5 +246,7 @@ nuevo json  para crear auditoria
 	}
 
 
-
-
+*******************************************************************************
+-Parece el PUT de User esta bloqueado
+-Como se actualiza la clave de un usuario?
+-El el combo de usuarios auditores, solo debe devolver los que sean de este tipo
