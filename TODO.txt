@@ -263,4 +263,4 @@ existen 3 valores validos
 
 
 *******************************************************************************
--El el combo de usuarios auditores, solo debe devolver los que sean de este tipo
+-el combo de usuarios auditores, solo debe devolver los que sean de este tipo (/auditorinstitucioneducativa/listarusuariossinrelacion/)
