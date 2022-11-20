@@ -73,7 +73,6 @@ def auditoriainstitucioneducativa_id_api_view(request, id = None):
 @api_view(['GET'])
 def auditoriainstitucioneducativa_usuarios_api_view(request):
     if request.method == 'GET': 
-        usuarios = User.objects.all() #User.objects.exclude(codigo ='admin').all()
-        list_usuarios = [usuario for usuario in usuarios if Institucioneducativa.objects.filter(usuarioid = usuario.id).count()==0]        
-        usuarioserializer = UserListSerializer(list_usuarios, many=True)
+        usuarios = User.objects.filter(rol= 'Auditor').all() 
+        usuarioserializer = UserListSerializer(usuarios, many=True)
         return Response(usuarioserializer.data,status = status.HTTP_200_OK)
