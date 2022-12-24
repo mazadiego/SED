@@ -266,3 +266,27 @@ existen 3 valores validos
 -el combo de usuarios auditores, solo debe devolver los que sean de este tipo (/auditorinstitucioneducativa/listarusuariossinrelacion/)
 
 corregido 
+
+consultas de documentos
+tipos de documento
+1-Ingreso Presupuestal
+2-Recaudo Presupuestal
+3-Solicitud Presupuestal--falta terminar
+4-CDP
+5-RP
+6-OP 
+7-PP 
+8-proyeccion presupuestal --falta terminar
+9-Modificacion Presupuestal --falta terminar
+
+http://127.0.0.1:8000/ingresopresupuestal/consulta/documentos/
+{
+	"fechainicial":"2021-01-30",
+	"fechafinal":"2021-12-30",
+	"institucioneducativaid": {
+			"codigo": "03"
+		},
+	"tipodocumento":1,
+	"estado":"procesado"
+		
+	}

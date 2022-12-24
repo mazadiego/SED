@@ -23,6 +23,29 @@ from apps.tipoidentificacion.api.serializers import TipoidentificacionSerializer
 from apps.recaudopresupuestal.models import Recaudopresupuestal
 from django.db.models import Count,Sum
 
+from apps.recaudopresupuestal.api.serializers import Recaudopresupuestalserializers
+
+from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponibilidadpresupuestal
+from apps.certificadodisponibilidadpresupuestal.api.serializers import CertificadodisponibilidadpresupuestalSerializers
+
+from apps.registropresupuestal.models import Registropresupuestal
+from apps.registropresupuestal.api.serializers import Registropresupuestalserializers
+
+from apps.obligacionpresupuestal.models import Obligacionpresupuestal
+from apps.obligacionpresupuestal.api.serializers import ObligacionpresupuestalSerializers
+
+from apps.pagopresupuestal.models import Pagopresupuestal
+from apps.pagopresupuestal.api.serializers import PagopresupuestalSerializers
+
+from apps.solicitudpresupuestalcabecera.models import Solicitudpresupuestalcabecera
+from apps.solicitudpresupuestalcabecera.api.serializers import SolicitudpresupuestalcabeceraSerializers
+
+from apps.proyeccionpresupuestalcabecera.models import Proyeccionpresupuestalcabecera
+from apps.proyeccionpresupuestalcabecera.api.serializers import ProyeccionpresupuestalcabeceraSerializers
+
+from apps.modificacionproyeccionpresupuestalcabecera.models import Modificacionproyeccionpresupuestalcabecera
+from apps.modificacionproyeccionpresupuestalcabecera.api.serializers import ModificacionproyeccionpresupuestalcabeceraSerializers
+
 @api_view(['GET','POST'])
 def ingresopresupuestal_api_view(request):    
     if request.method =='GET':
@@ -279,3 +302,138 @@ def saldoingresoporrecaudo_mod(recaudopresupuestal,consecutivo):
     saldo = totalingreso  - totalrecaudo
 
     return saldo
+
+@api_view(['GET'])
+def consultaintegral_dcoumentos_api_view(request):
+    if request.method =='GET':
+        
+        tipodocumento = 0
+        institucioneducativaid =0
+        estado = 'Procesado'
+
+        if 'tipodocumento' in request.data.keys():
+            tipodocumento = request.data.pop('tipodocumento')
+
+        if 'fechainicial' in request.data.keys():
+            fechainicial = request.data.pop('fechainicial')
+
+        if 'fechafinal' in request.data.keys():
+            fechafinal = request.data.pop('fechafinal')
+
+        if 'estado' in request.data.keys():
+            estado = request.data.pop('estado')
+        
+
+        if 'institucioneducativaid' in request.data.keys():
+            institucioneducativaid = request.data.pop('institucioneducativaid')
+            if 'codigo' in institucioneducativaid.keys():
+                institucioneducativa = Institucioneducativa.objects.filter(codigo = institucioneducativaid['codigo']).first() 
+                if institucioneducativa:
+                    request.data.update({"institucioneducativaid": institucioneducativa.id})
+                else:
+                    return Response("institucion educativa ingresada no existe",status = status.HTTP_400_BAD_REQUEST)                     
+            else:
+                return Response("falta el nodo codigo para institucion educativa",status = status.HTTP_400_BAD_REQUEST)   
+        else:
+            return Response("falta el nodo institucioneducativaid",status = status.HTTP_400_BAD_REQUEST)
+
+        #1-Ingreso Presupuestal
+        if tipodocumento == 1:
+            ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
+            , fecha__gte=fechainicial
+            , fecha__lte=fechafinal
+            , estado=estado).all()
+            
+            ingresopresupuestal_serializers = Ingresopresupuestalserializers(ingresopresupuestal, many = True)
+            return Response(ingresopresupuestal_serializers.data,status = status.HTTP_200_OK)
+        #2-Recaudo Presupuestal
+        elif tipodocumento == 2:
+            recaudopresupuestal = Recaudopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
+            , fecha__gte=fechainicial
+            , fecha__lte=fechafinal
+            , estado=estado).all()
+
+            recaudopresupuestal_serializers = Recaudopresupuestalserializers(recaudopresupuestal, many = True)
+            return Response(recaudopresupuestal_serializers.data,status = status.HTTP_200_OK)
+        #3-Solicitud Presupuestal
+        elif tipodocumento == 3:
+            
+            solicitudpresupuestalcabecera = Solicitudpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativaid
+            , fecha__gte=fechainicial
+            , fecha__lte=fechafinal
+            , estado=estado).all()
+
+            solicitudpresupuestalcabeceraSerializers = SolicitudpresupuestalcabeceraSerializers(solicitudpresupuestalcabecera, many = True)
+            return Response(solicitudpresupuestalcabeceraSerializers.data,status = status.HTTP_200_OK)
+
+        #4-CDP
+        elif tipodocumento == 4:
+            certificadodisponibilidadpresupuestal = Certificadodisponibilidadpresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
+            , fecha__gte=fechainicial
+            , fecha__lte=fechafinal
+            , estado=estado).all()
+         
+            certificadodisponibilidadpresupuestalSerializers = CertificadodisponibilidadpresupuestalSerializers(certificadodisponibilidadpresupuestal, many = True)
+            return Response(certificadodisponibilidadpresupuestalSerializers.data,status = status.HTTP_200_OK)
+
+        #5-RP
+        elif tipodocumento == 5:
+            registropresupuestal = Registropresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
+            , fecha__gte=fechainicial
+            , fecha__lte=fechafinal
+            , estado=estado).all()
+         
+            registropresupuestalserializers = Registropresupuestalserializers(registropresupuestal, many = True)
+            return Response(registropresupuestalserializers.data,status = status.HTTP_200_OK)
+
+        #6-OP 
+        elif tipodocumento == 6:
+            obligacionpresupuestal = Obligacionpresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
+            , fecha__gte=fechainicial
+            , fecha__lte=fechafinal
+            , estado=estado).all()
+         
+            obligacionpresupuestalSerializers = ObligacionpresupuestalSerializers(obligacionpresupuestal, many = True)
+            return Response(obligacionpresupuestalSerializers.data,status = status.HTTP_200_OK)
+        #7-PP 
+        elif tipodocumento == 7:
+            pagopresupuestal = Pagopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
+            , fecha__gte=fechainicial
+            , fecha__lte=fechafinal
+            , estado=estado).all()
+         
+            pagopresupuestalSerializers = PagopresupuestalSerializers(pagopresupuestal, many = True)
+            return Response(pagopresupuestalSerializers.data,status = status.HTTP_200_OK)
+
+        #8-proyeccion presupuestal
+        elif tipodocumento == 8:
+            return Response("En Construccion",status = status.HTTP_400_BAD_REQUEST)
+            #proyeccionpresupuestalcabecera = Proyeccionpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativaid
+            #, fecha__gte=fechainicial
+            #, fecha__lte=fechafinal
+            #, estado=estado).all()
+         #
+            #proyeccionpresupuestalcabeceraSerializers = ProyeccionpresupuestalcabeceraSerializers(proyeccionpresupuestalcabecera, many = True)
+            #return Response(proyeccionpresupuestalcabeceraSerializers.data,status = status.HTTP_200_OK)
+
+        #9-Modificacion Presupuestal 
+        elif tipodocumento == 9:
+            #modificacionproyeccionpresupuestalcabecera = Modificacionproyeccionpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativaid
+            #, fecha__gte=fechainicial
+            #, fecha__lte=fechafinal
+            #, estado=estado).all()
+         #
+            #modificacionproyeccionpresupuestalcabeceraSerializers = ModificacionproyeccionpresupuestalcabeceraSerializers(modificacionproyeccionpresupuestalcabecera, many = True)
+            #return Response(modificacionproyeccionpresupuestalcabeceraSerializers.data,status = status.HTTP_200_OK)
+            
+            return Response("En Construccion",status = status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response("Seleccione un tipo de documento correcto",status = status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+
