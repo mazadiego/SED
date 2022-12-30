@@ -325,11 +325,11 @@ def consultaintegral_dcoumentos_api_view(request):
         
 
         if 'institucioneducativaid' in request.data.keys():
-            institucioneducativaid = request.data.pop('institucioneducativaid')
-            if 'codigo' in institucioneducativaid.keys():
-                institucioneducativa = Institucioneducativa.objects.filter(codigo = institucioneducativaid['codigo']).first() 
+            institucioneducativa_id = request.data.pop('institucioneducativaid')
+            if 'codigo' in institucioneducativa_id.keys():
+                institucioneducativa = Institucioneducativa.objects.filter(codigo = institucioneducativa_id['codigo']).first() 
                 if institucioneducativa:
-                    request.data.update({"institucioneducativaid": institucioneducativa.id})
+                    institucioneducativaid = institucioneducativa.id
                 else:
                     return Response("institucion educativa ingresada no existe",status = status.HTTP_400_BAD_REQUEST)                     
             else:
