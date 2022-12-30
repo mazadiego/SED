@@ -303,9 +303,9 @@ def saldoingresoporrecaudo_mod(recaudopresupuestal,consecutivo):
 
     return saldo
 
-@api_view(['GET'])
+@api_view(['POST'])
 def consultaintegral_dcoumentos_api_view(request):
-    if request.method =='GET':
+    if request.method =='POST':
         
         tipodocumento = 0
         institucioneducativaid =0
