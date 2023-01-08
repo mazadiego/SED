@@ -271,7 +271,7 @@ consultas de documentos
 tipos de documento
 1-Ingreso Presupuestal
 2-Recaudo Presupuestal
-3-Solicitud Presupuestal--falta terminar
+3-Solicitud Presupuestal
 4-CDP
 5-RP
 6-OP 

@@ -27,12 +27,15 @@ from apps.recaudopresupuestal.api.serializers import Recaudopresupuestalserializ
 
 from apps.certificadodisponibilidadpresupuestal.models import Certificadodisponibilidadpresupuestal
 from apps.certificadodisponibilidadpresupuestal.api.serializers import CertificadodisponibilidadpresupuestalSerializers
+from apps.certificadodisponibilidadpresupuestal.api.api import saldocdp_por_rp
 
 from apps.registropresupuestal.models import Registropresupuestal
 from apps.registropresupuestal.api.serializers import Registropresupuestalserializers
+from apps.registropresupuestal.api.api import saldo_rp_por_op
 
 from apps.obligacionpresupuestal.models import Obligacionpresupuestal
 from apps.obligacionpresupuestal.api.serializers import ObligacionpresupuestalSerializers
+from apps.obligacionpresupuestal.api.api import saldo_opresu_por_pagopresu
 
 from apps.pagopresupuestal.models import Pagopresupuestal
 from apps.pagopresupuestal.api.serializers import PagopresupuestalSerializers
@@ -305,6 +308,8 @@ def saldoingresoporrecaudo_mod(recaudopresupuestal,consecutivo):
 
 @api_view(['GET'])
 def consultaintegral_dcoumentos_api_view(request):
+    saldo=0.0
+    list_datos = []
     if request.method =='GET':
         
         tipodocumento = 0
@@ -339,13 +344,19 @@ def consultaintegral_dcoumentos_api_view(request):
 
         #1-Ingreso Presupuestal
         if tipodocumento == 1:
+            
             ingresopresupuestal = Ingresopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
             , fecha__gte=fechainicial
             , fecha__lte=fechafinal
             , estado=estado).all()
             
-            ingresopresupuestal_serializers = Ingresopresupuestalserializers(ingresopresupuestal, many = True)
-            return Response(ingresopresupuestal_serializers.data,status = status.HTTP_200_OK)
+            for ingreso in ingresopresupuestal:
+                saldo = saldoingresoporrecaudo(institucioneducativaid,ingreso.consecutivo)
+                ingresopresupuestal_serializers = Ingresopresupuestalserializers(ingreso)
+                ingresopresupuestal_saldo = dict(ingresopresupuestal_serializers.data)
+                ingresopresupuestal_saldo.update({"saldo" : saldo})
+                list_datos.append(ingresopresupuestal_saldo)
+            return Response(list_datos,status = status.HTTP_200_OK)
         #2-Recaudo Presupuestal
         elif tipodocumento == 2:
             recaudopresupuestal = Recaudopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
@@ -353,9 +364,14 @@ def consultaintegral_dcoumentos_api_view(request):
             , fecha__lte=fechafinal
             , estado=estado).all()
 
-            recaudopresupuestal_serializers = Recaudopresupuestalserializers(recaudopresupuestal, many = True)
-            return Response(recaudopresupuestal_serializers.data,status = status.HTTP_200_OK)
-        #3-Solicitud Presupuestal
+            for recaudo in recaudopresupuestal:
+                saldo = 0
+                recaudopresupuestal_serializers = Recaudopresupuestalserializers(recaudo)
+                recaudopresupuestal_saldo = dict(recaudopresupuestal_serializers.data)
+                recaudopresupuestal_saldo.update({"saldo" : saldo})
+                list_datos.append(recaudopresupuestal_saldo)
+            return Response(list_datos,status = status.HTTP_200_OK)
+        #3-Solicitud Presupuestal---debe salir de la consulta consulta aparte 
         elif tipodocumento == 3:
             
             solicitudpresupuestalcabecera = Solicitudpresupuestalcabecera.objects.filter(institucioneducativaid = institucioneducativaid
@@ -372,9 +388,15 @@ def consultaintegral_dcoumentos_api_view(request):
             , fecha__gte=fechainicial
             , fecha__lte=fechafinal
             , estado=estado).all()
-         
-            certificadodisponibilidadpresupuestalSerializers = CertificadodisponibilidadpresupuestalSerializers(certificadodisponibilidadpresupuestal, many = True)
-            return Response(certificadodisponibilidadpresupuestalSerializers.data,status = status.HTTP_200_OK)
+
+            for cdp in certificadodisponibilidadpresupuestal:
+                saldo = saldocdp_por_rp(cdp.id)
+                certificadodisponibilidadpresupuestalSerializers = CertificadodisponibilidadpresupuestalSerializers(cdp)
+                certificadodisponibilidadpresupuestal_saldo = dict(certificadodisponibilidadpresupuestalSerializers.data)
+                certificadodisponibilidadpresupuestal_saldo.update({"saldo" : saldo})
+                list_datos.append(certificadodisponibilidadpresupuestal_saldo)
+
+            return Response(list_datos,status = status.HTTP_200_OK)
 
         #5-RP
         elif tipodocumento == 5:
@@ -383,8 +405,13 @@ def consultaintegral_dcoumentos_api_view(request):
             , fecha__lte=fechafinal
             , estado=estado).all()
          
-            registropresupuestalserializers = Registropresupuestalserializers(registropresupuestal, many = True)
-            return Response(registropresupuestalserializers.data,status = status.HTTP_200_OK)
+            for rp in registropresupuestal:
+                saldo = saldo_rp_por_op(rp.id)                
+                registropresupuestalserializers = Registropresupuestalserializers(rp)
+                registropresupuestal_saldo = dict(registropresupuestalserializers.data)
+                registropresupuestal_saldo.update({"saldo" : saldo})
+                list_datos.append(registropresupuestal_saldo)
+            return Response(list_datos,status = status.HTTP_200_OK)
 
         #6-OP 
         elif tipodocumento == 6:
@@ -392,9 +419,15 @@ def consultaintegral_dcoumentos_api_view(request):
             , fecha__gte=fechainicial
             , fecha__lte=fechafinal
             , estado=estado).all()
-         
-            obligacionpresupuestalSerializers = ObligacionpresupuestalSerializers(obligacionpresupuestal, many = True)
-            return Response(obligacionpresupuestalSerializers.data,status = status.HTTP_200_OK)
+
+            for op in obligacionpresupuestal:
+                saldo = saldo_opresu_por_pagopresu(op.id)
+                obligacionpresupuestalSerializers = ObligacionpresupuestalSerializers(op)
+                obligacionpresupuestal_saldo = dict(obligacionpresupuestalSerializers.data)
+                obligacionpresupuestal_saldo.update({"saldo" : saldo})
+                list_datos.append(obligacionpresupuestal_saldo)
+
+            return Response(list_datos,status = status.HTTP_200_OK)
         #7-PP 
         elif tipodocumento == 7:
             pagopresupuestal = Pagopresupuestal.objects.filter(institucioneducativaid = institucioneducativaid
@@ -402,8 +435,14 @@ def consultaintegral_dcoumentos_api_view(request):
             , fecha__lte=fechafinal
             , estado=estado).all()
          
-            pagopresupuestalSerializers = PagopresupuestalSerializers(pagopresupuestal, many = True)
-            return Response(pagopresupuestalSerializers.data,status = status.HTTP_200_OK)
+            for pp in pagopresupuestal:
+                saldo = 0
+                pagopresupuestalSerializers = PagopresupuestalSerializers(pp)
+                pagopresupuestal_saldo = dict(pagopresupuestalSerializers.data)
+                pagopresupuestal_saldo.update({"saldo" : saldo})
+                list_datos.append(pagopresupuestal_saldo)
+
+            return Response(list_datos,status = status.HTTP_200_OK)
 
         #8-proyeccion presupuestal
         elif tipodocumento == 8:
